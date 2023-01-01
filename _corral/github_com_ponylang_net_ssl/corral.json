@@ -1,0 +1,19 @@
+{
+  "deps": [],
+  "packages": [
+    "net_ssl"
+  ],
+  "info": {
+    "description": "SSL library",
+    "homepage": "https://github.com/ponylang/net_ssl",
+    "license": "BSD-2-Clause",
+    "documentation_url": "https://ponylang.github.io/net_ssl",
+    "version": "1.2.1",
+    "name": "net_ssl"
+  },
+  "scripts": {
+    "windows": {
+      "post_fetch_or_update": "PowerShell.exe -File make.ps1 -Config release -Command libs"
+    }
+  }
+}

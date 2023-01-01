@@ -1,0 +1,7 @@
+/build/*
+TAGS
+tags
+/.deps/*
+/.coverage/
+/_corral/
+/_repos/
