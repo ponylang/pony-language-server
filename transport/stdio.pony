@@ -1,21 +1,42 @@
 use "protocol"
 
 
-class Stdio is InputNotify
-    var _out: OutStream
-    var handler: ProtocolHandler
+class InputNotifier is InputNotify
+    let parent: Stdio
 
-    new iso create(out': OutStream) =>
-        _out = out'
-        handler = BaseProtocol
+    new iso create(parent': Stdio) =>
+        parent = parent'
 
     fun ref apply(data': Array[U8 val] iso): None val =>
         var data = String.from_array(consume data')
-        _out.print("Data received: " + data)
-        let req = handler(data)
-        match req
-        | let r: RequestMessage => _out.print("Got request")
-        end
+        parent.handle_data(data)
     
     fun ref dispose(): None val =>
-        _out.print("Dispose")
+        None
+
+
+actor Stdio is InputNotify
+    var _env: Env
+    var _out: OutStream
+    var protocol_handler: BaseProtocol
+    var manager: Manager tag
+
+    new create(env: Env, manager': Manager tag) =>
+        _env = env
+        _out = env.out
+        protocol_handler = BaseProtocol
+        manager = manager'
+        let notifier = InputNotifier(this)
+        env.input(consume notifier)
+
+    be handle_data(data: String) =>
+        let req = protocol_handler(data)
+        match req
+        | let r: Message =>
+            match manager
+            | let m: Manager tag => m.handle_message(r)
+            end
+        end
+
+    be send_message(msg: Message val) =>
+        None

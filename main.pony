@@ -2,17 +2,20 @@ use "net"
 use "valbytes"
 use "debug"
 use "transport"
+use "protocol"
 
 actor Main
-  """
-  A simple HTTP Echo server, sending back the received request in the response body.
-  """
+  let _env: Env
+
   new create(env: Env) =>
+    _env = env
     let channel = try env.args(1)? else "stdio" end
+    env.out.print("Initializing channel " + channel)
     match channel
-    | "stdio" =>
-      let manager = Stdio(env.out)
-      env.input(consume manager)
+    | "stdio" => Stdio(env, recover tag this end)
     else
       env.out.print("Channel not implemented: " + channel)
     end
+
+  be handle_message(msg: Message val) =>
+    _env.out.print("Main handle_message")
