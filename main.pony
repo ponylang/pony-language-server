@@ -1,6 +1,3 @@
-use "net"
-use "valbytes"
-use "debug"
 use "transport"
 use "protocol"
 

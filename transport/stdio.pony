@@ -1,4 +1,4 @@
-use "protocol"
+use "../protocol"
 
 
 class InputNotifier is InputNotify

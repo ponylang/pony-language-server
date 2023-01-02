@@ -1,4 +1,4 @@
-use "protocol"
+use "../protocol"
 
 interface Manager
     be handle_message(msg: Message val)
