@@ -1,4 +1,4 @@
-use "../protocol"
+use "protocol"
 
 
 class InputNotifier is InputNotify
@@ -19,9 +19,9 @@ actor Stdio is InputNotify
     var _env: Env
     var _out: OutStream
     var protocol_handler: BaseProtocol
-    var manager: Manager tag
+    var manager: Main
 
-    new create(env: Env, manager': Manager tag) =>
+    new create(env: Env, manager': Main) =>
         _env = env
         _out = env.out
         protocol_handler = BaseProtocol
@@ -34,7 +34,7 @@ actor Stdio is InputNotify
         match req
         | let r: Message =>
             match manager
-            | let m: Manager tag => m.handle_message(r)
+            | let m: Main => m.handle_message(r)
             end
         end
 

@@ -1,4 +1,3 @@
-use "transport"
 use "protocol"
 
 actor Main
@@ -9,7 +8,7 @@ actor Main
     let channel = try env.args(1)? else "stdio" end
     env.out.print("Initializing channel " + channel)
     match channel
-    | "stdio" => Stdio(env, recover tag this end)
+    | "stdio" => Stdio(env, this)
     else
       env.out.print("Channel not implemented: " + channel)
     end

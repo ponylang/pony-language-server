@@ -1,0 +1,61 @@
+{
+	"name": "pony-lsp",
+	"description": "A Pony language server",
+	"license": "MIT",
+	"version": "1.0.0",
+	"categories": [],
+	"engines": {
+		"vscode": "^1.74.0"
+	},
+	"activationEvents": [
+		"onLanguage:pony"
+	],
+	"main": "./out/extension",
+	"contributes": {
+		"configuration": {
+			"type": "object",
+			"title": "Pony configuration",
+			"properties": {
+				"PonyLanguageServer.maxNumberOfProblems": {
+					"scope": "resource",
+					"type": "number",
+					"default": 100,
+					"description": "Controls the maximum number of problems produced by the server."
+				},
+				"PonyLanguageServer.trace.server": {
+					"scope": "window",
+					"type": "string",
+					"enum": [
+						"off",
+						"messages",
+						"verbose"
+					],
+					"default": "verbose",
+					"description": "Traces the communication between VS Code and the Pony language server."
+				}
+			}
+		}
+	},
+	"scripts": {
+		"vscode:prepublish": "npm run compile",
+		"compile": "tsc -b",
+		"watch": "tsc -b -w"
+	},
+	"devDependencies": {
+		"@types/bluebird": "^3.5.32",
+		"@types/mocha": "^9.1.0",
+		"@types/node": "^16.11.7",
+		"@types/vscode": "^1.45.1",
+		"@types/which": "^2.0.1",
+		"@typescript-eslint/eslint-plugin": "^5.42.0",
+		"@typescript-eslint/parser": "^5.42.0",
+		"eslint": "^8.26.0",
+		"mocha": "^9.2.1",
+		"prettier": "^2.0.5",
+		"tslint": "^5.8.0",
+		"typescript": "^4.8.4"
+	},
+	"dependencies": {
+		"vscode-languageclient": "^8.0.2"
+	}
+}
