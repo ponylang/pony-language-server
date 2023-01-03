@@ -12,6 +12,7 @@
 			"autoAttachChildProcesses": true,
             "sourceMaps": true,
 			"preLaunchTask": {
+				"path": "client",
 				"type": "npm",
 				"script": "watch"
 			}

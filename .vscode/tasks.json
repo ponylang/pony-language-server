@@ -4,6 +4,7 @@
 		{
 			"type": "npm",
 			"script": "compile",
+			"path": "client",
 			"group": "build",
 			"presentation": {
 				"panel": "dedicated",
@@ -17,6 +18,7 @@
 			"type": "npm",
 			"script": "watch",
 			"isBackground": true,
+			"path": "client",
 			"group": {
 				"kind": "build",
 				"isDefault": true

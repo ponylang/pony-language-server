@@ -1,4 +1,3 @@
-use "protocol"
 
 actor Main
   let debug: Debugger
@@ -17,3 +16,5 @@ actor Main
 
   be handle_message(msg: Message val) =>
     debug.print("handle_message: " + msg.string())
+
+  

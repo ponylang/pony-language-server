@@ -1,5 +1,3 @@
-use "protocol"
-
 
 class InputNotifier is InputNotify
     let parent: Stdio
@@ -26,7 +24,7 @@ actor Stdio is InputNotify
         env = env'
         out = env.out
         debug = debug'
-        protocol_handler = BaseProtocol
+        protocol_handler = BaseProtocol(debug)
         manager = manager'
         let notifier = InputNotifier(this)
         env.input(consume notifier)
@@ -34,10 +32,7 @@ actor Stdio is InputNotify
     be handle_data(data: String) =>
         let req = protocol_handler(data)
         match req
-        | let r: Message val =>
-            match manager
-            | let m: Main => m.handle_message(r)
-            end
+        | let r: Message val => manager.handle_message(r)
         end
 
     // be send_message(msg: Message) =>

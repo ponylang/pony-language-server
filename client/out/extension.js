@@ -7,6 +7,7 @@ const node_1 = require("vscode-languageclient/node");
 let client;
 async function activate(context) {
     let exe = context.asAbsolutePath("pony-lsp");
+    vscode_1.window.showWarningMessage(`Absolute path pony-lsp :${exe}:`);
     showPony(exe);
     // If the extension is launched in debug mode then the debug server options are used
     // Otherwise the run options are used
