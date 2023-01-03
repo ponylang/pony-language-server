@@ -1,17 +1,19 @@
 use "protocol"
 
 actor Main
+  let debug: Debugger
   let _env: Env
 
   new create(env: Env) =>
     _env = env
+    debug = Debugger(env)
     let channel = try env.args(1)? else "stdio" end
-    env.out.print("Initializing channel " + channel)
+    debug.print("Initializing channel " + channel)
     match channel
-    | "stdio" => Stdio(env, this)
+    | "stdio" => Stdio(env, this, debug)
     else
-      env.out.print("Channel not implemented: " + channel)
+      debug.print("Channel not implemented: " + channel)
     end
 
   be handle_message(msg: Message val) =>
-    _env.out.print("Main handle_message")
+    debug.print("handle_message: " + msg.string())

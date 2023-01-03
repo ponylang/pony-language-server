@@ -13,7 +13,21 @@ class Header
     value = value'
 
 
-type Message is (I64 | String, String, None)
+class Message
+  let id: (I64 | String)
+  let method: String
+  let params: (None | String)
+  new val create(id': (I64 | String), method': String, params': (None | String)) =>
+    id = id'
+    method = method'
+    params = params'
+  fun string(): String => 
+    let r = id.string() + " " + method
+    match params
+    | let p: String => r + "\n" + p
+    else
+      r
+    end
 
 
 class BaseProtocol
@@ -24,13 +38,13 @@ class BaseProtocol
 
   new ref create() => None
 
-  fun ref apply(data: String): (None | Message) =>
+  fun ref apply(data: String): (None | Message val) =>
     match receiving_mode
     | ReceivingModeHeader => receive_headers(data)
     | ReceivingModeContent => receive_content(data)
     end
 
-  fun ref receive_headers(data: String): (None | Message) =>
+  fun ref receive_headers(data: String): (None | Message val) =>
     line_buffer.append(data)
     if line_buffer.contains("\r\n") then
       let abuffer = line_buffer.split("\r\n")
@@ -48,7 +62,7 @@ class BaseProtocol
       end
     end
 
-  fun ref receive_content(data: String): (None | Message) =>
+  fun ref receive_content(data: String): (None | Message val) =>
     content_buffer.append(data)
     if content_buffer.contains("\r\n") then
       parse_message()
@@ -67,7 +81,7 @@ class BaseProtocol
       end
       var method = json.data("method")? as String
       var params: None = None
-      (id, method, params)
+      Message(id, method, params)
     end
     // match json.data("params")?
     // | let paramsObject: JsonObject => params = paramsObject

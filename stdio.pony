@@ -16,14 +16,16 @@ class InputNotifier is InputNotify
 
 
 actor Stdio is InputNotify
-    var _env: Env
-    var _out: OutStream
+    var env: Env
+    var out: OutStream
     var protocol_handler: BaseProtocol
     var manager: Main
+    var debug: Debugger
 
-    new create(env: Env, manager': Main) =>
-        _env = env
-        _out = env.out
+    new create(env': Env, manager': Main, debug': Debugger) =>
+        env = env'
+        out = env.out
+        debug = debug'
         protocol_handler = BaseProtocol
         manager = manager'
         let notifier = InputNotifier(this)
@@ -32,11 +34,11 @@ actor Stdio is InputNotify
     be handle_data(data: String) =>
         let req = protocol_handler(data)
         match req
-        | let r: Message =>
+        | let r: Message val =>
             match manager
             | let m: Main => m.handle_message(r)
             end
         end
 
-    be send_message(msg: Message val) =>
-        None
+    // be send_message(msg: Message) =>
+    //     None
