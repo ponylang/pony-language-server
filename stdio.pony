@@ -16,7 +16,7 @@ class InputNotifier is InputNotify
 actor Stdio is InputNotify
     var env: Env
     var out: OutStream
-    var protocol_handler: BaseProtocol
+    var protocol_base: BaseProtocol
     var manager: Main
     var debug: Debugger
 
@@ -24,16 +24,18 @@ actor Stdio is InputNotify
         env = env'
         out = env.out
         debug = debug'
-        protocol_handler = BaseProtocol(debug)
+        protocol_base = BaseProtocol(debug)
         manager = manager'
         let notifier = InputNotifier(this)
         env.input(consume notifier)
 
     be handle_data(data: String) =>
-        let req = protocol_handler(data)
+        let req = protocol_base(data)
         match req
         | let r: Message val => manager.handle_message(r)
         end
 
-    // be send_message(msg: Message) =>
-    //     None
+    be send_message(msg: ResponseMessage val) =>
+        let output = protocol_base.compose_message(msg)
+        out.write(output)
+        debug.print("SENT\n" + output)
