@@ -35,6 +35,10 @@ actor Stdio is InputNotify
         | let r: RequestMessage val => 
             debug.print("\n\n<-\n" + r.json().string())
             manager.handle_message(r)
+        | let r: ResponseError val => 
+            debug.print("\n\n<-Err (unhandled)\n" + r.json().string())
+        | let r: ResponseMessage val => 
+            debug.print("\n\n<- (unhandled)\n" + r.json().string())
         end
 
     be send_message(msg: Message val) =>

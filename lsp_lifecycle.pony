@@ -33,13 +33,6 @@ class LifecycleProtocol
         "Server already initialized"
       )))
     end
-    channel.send_message(RequestMessage(12345, "window/showMessage", JsonObject(
-            recover val
-              Map[String, JsonType](2)
-                .>update("type", I64(2))
-                .>update("message", "Pony LS initializing...")
-            end
-          )))
     channel.send_message(ResponseMessage(msg.id, JsonObject(
       recover val
         Map[String, JsonType](2)
@@ -65,4 +58,11 @@ class LifecycleProtocol
           ))
       end
     )))
-          
+    channel.send_message(RequestMessage(12345, "window/showMessage", JsonObject(
+      recover val
+        Map[String, JsonType](2)
+          .>update("type", I64(2))
+          .>update("message", "Pony LS initializing...")
+      end
+    )))
+    
