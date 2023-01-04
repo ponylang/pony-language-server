@@ -1,35 +1,35 @@
 // https://github.com/zigtools/zls-vscode/blob/master/src/extension.ts
 
-import { ExtensionContext, window, StatusBarAlignment, StatusBarItem } from 'vscode';
+import { ExtensionContext, window, StatusBarAlignment, StatusBarItem, workspace } from 'vscode';
 
 import {
   ExecutableOptions,
   LanguageClient,
   LanguageClientOptions,
   ServerOptions,
+  TransportKind,
 } from 'vscode-languageclient/node';
 
 let client: LanguageClient;
 
 export async function activate(context: ExtensionContext) {
   let exe = context.asAbsolutePath("pony-lsp");
-  window.showWarningMessage(`Absolute path pony-lsp :${exe}:`);
   showPony(exe);
   // If the extension is launched in debug mode then the debug server options are used
   // Otherwise the run options are used
   let serverOptions: ServerOptions = {
     command: exe,
-    args: ["stdio"]
+    args: ["stdio"],
+    transport: TransportKind.stdio
   };
 
   // Options to control the language client
   let clientOptions: LanguageClientOptions = {
-    documentSelector: [{ scheme: "file", language: "zig" }],
+    documentSelector: [{ scheme: "file", language: "pony" }],
     outputChannelName: "Pony LSP client",
-    // synchronize: {
-    //   // Notify the server about file changes to '.clientrc files contained in the workspace
-    //   fileEvents: workspace.createFileSystemWatcher('**/.pony')
-    // }
+    synchronize: {
+      fileEvents: workspace.createFileSystemWatcher('{**/*.pony}')
+    }
   };
 
   // Create the language client and start the client.

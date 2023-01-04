@@ -16,12 +16,6 @@
 			"type": "object",
 			"title": "Pony configuration",
 			"properties": {
-				"PonyLanguageServer.maxNumberOfProblems": {
-					"scope": "resource",
-					"type": "number",
-					"default": 100,
-					"description": "Controls the maximum number of problems produced by the server."
-				},
 				"PonyLanguageServer.trace.server": {
 					"scope": "window",
 					"type": "string",
@@ -34,7 +28,27 @@
 					"description": "Traces the communication between VS Code and the Pony language server."
 				}
 			}
-		}
+		},
+		"languages": [
+			{
+				"id": "pony",
+				"aliases": [
+                    "Pony",
+                    "pony"
+                ],
+				"extensions": [
+					".pony"
+				],
+				"configuration": "./language-configuration.json"
+			}
+		],
+		"grammars": [
+            {
+                "language": "pony",
+                "scopeName": "source.pony",
+                "path": "./pony.tmLanguage"
+            }
+        ]
 	},
 	"scripts": {
 		"vscode:prepublish": "npm run compile",
@@ -59,3 +73,4 @@
 		"vscode-languageclient": "^8.0.2"
 	}
 }
+

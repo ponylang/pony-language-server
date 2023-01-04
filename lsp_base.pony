@@ -14,7 +14,11 @@ class Header
     value = value'
 
 
-class Message
+interface Message
+  fun json(): JsonObject
+
+
+class RequestMessage
   let id: (I64 | String)
   let method: String
   let params: (None | JsonObject val)
@@ -89,13 +93,13 @@ class BaseProtocol
   new ref create(debug': Debugger) => 
     debug = debug'
 
-  fun ref apply(data: String): (None | Message val) =>
+  fun ref apply(data: String): (None | RequestMessage val) =>
     match receiving_mode
     | ReceivingModeHeader => receive_headers(data)
     | ReceivingModeContent => receive_content(data)
     end
 
-  fun ref receive_headers(data: String): (None | Message val) =>
+  fun ref receive_headers(data: String): (None | RequestMessage val) =>
     line_buffer.append(data)
     if line_buffer.contains("\r\n") then
       let abuffer = line_buffer.split("\r\n")
@@ -113,11 +117,11 @@ class BaseProtocol
       end
     end
 
-  fun ref receive_content(data: String): (None | Message val) =>
+  fun ref receive_content(data: String): (None | RequestMessage val) =>
     content_buffer.append(data)
     parse_message()
 
-  fun ref parse_message(): (None | Message val) =>
+  fun ref parse_message(): (None | RequestMessage val) =>
     try
       let data = content_buffer.clone()
       let doc = JsonDoc
@@ -130,12 +134,16 @@ class BaseProtocol
       end
       var method = json.data("method")? as String
       var params = json.data("params")? as JsonObject
-      Message(id, method, params)
+      let res = RequestMessage(id, method, params)
+      line_buffer = String
+      content_buffer = String
+      headers = Array[Header]
+      receiving_mode = ReceivingModeHeader
+      res
     end
 
-    fun ref compose_message(msg: ResponseMessage val): String =>
-      let content = "\r\n" + msg.json().string()
-      var r = "Content-Type: application/vscode-jsonrpc; charset=utf-8\r\n"
-      r = r + "Content-Length: " + content.size().string() + "\r\n"
-      r = r + consume content      
-      r
+    fun ref compose_message(msg: Message val): String =>
+      let content = msg.json().string()
+      "Content-Length: " + content.size().string() + "\r\n"
+      + "\r\n"
+      + content

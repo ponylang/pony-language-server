@@ -20,8 +20,7 @@ actor Main
       lifecycle = LifecycleProtocol(channel, debug)
     end
 
-  be handle_message(msg: Message val) =>
-    debug.print("handle_message: " + msg.json().string())
+  be handle_message(msg: RequestMessage val) =>
     match msg.method
     | "initialize" => lifecycle.handle_initialize(msg)
     else

@@ -32,10 +32,12 @@ actor Stdio is InputNotify
     be handle_data(data: String) =>
         let req = protocol_base(data)
         match req
-        | let r: Message val => manager.handle_message(r)
+        | let r: RequestMessage val => 
+            debug.print("\n\n<-\n" + r.json().string())
+            manager.handle_message(r)
         end
 
-    be send_message(msg: ResponseMessage val) =>
+    be send_message(msg: Message val) =>
         let output = protocol_base.compose_message(msg)
         out.write(output)
-        debug.print("sent: " + output)
+        debug.print("\n\n->\n" + output)

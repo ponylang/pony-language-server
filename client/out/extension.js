@@ -7,22 +7,21 @@ const node_1 = require("vscode-languageclient/node");
 let client;
 async function activate(context) {
     let exe = context.asAbsolutePath("pony-lsp");
-    vscode_1.window.showWarningMessage(`Absolute path pony-lsp :${exe}:`);
     showPony(exe);
     // If the extension is launched in debug mode then the debug server options are used
     // Otherwise the run options are used
     let serverOptions = {
         command: exe,
-        args: ["stdio"]
+        args: ["stdio"],
+        transport: node_1.TransportKind.stdio
     };
     // Options to control the language client
     let clientOptions = {
-        documentSelector: [{ scheme: "file", language: "zig" }],
+        documentSelector: [{ scheme: "file", language: "pony" }],
         outputChannelName: "Pony LSP client",
-        // synchronize: {
-        //   // Notify the server about file changes to '.clientrc files contained in the workspace
-        //   fileEvents: workspace.createFileSystemWatcher('**/.pony')
-        // }
+        synchronize: {
+            fileEvents: vscode_1.workspace.createFileSystemWatcher('{**/*.pony}')
+        }
     };
     // Create the language client and start the client.
     client = new node_1.LanguageClient('pony', 'Pony Language Server', serverOptions, clientOptions);
