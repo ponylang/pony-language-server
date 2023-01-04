@@ -7,7 +7,8 @@ actor Debugger
 
     new create(env': Env) =>
         env = env'
-        let path = FilePath(FileAuth(env.root), "/Users/jairocaro-accinoviciana/pony-lsp/pony-lsp.log")
+        // TODO: port to LSP tracing
+        let path = FilePath(FileAuth(env.root), Path.abs("/Users/jairocaro-accinoviciana/pony-lsp/pony-lsp.log"))
         outfile = File(path)
 
     be print(data: String) =>
