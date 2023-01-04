@@ -134,9 +134,8 @@ class BaseProtocol
     end
 
     fun ref compose_message(msg: ResponseMessage val): String =>
-      let content = msg.json().string()
+      let content = "\r\n" + msg.json().string()
       var r = "Content-Type: application/vscode-jsonrpc; charset=utf-8\r\n"
       r = r + "Content-Length: " + content.size().string() + "\r\n"
-      r = r + "\r\n"
-      r = r + content      
+      r = r + consume content      
       r

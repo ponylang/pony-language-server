@@ -38,4 +38,4 @@ actor Stdio is InputNotify
     be send_message(msg: ResponseMessage val) =>
         let output = protocol_base.compose_message(msg)
         out.write(output)
-        debug.print("SENT\n" + output)
+        debug.print("sent: " + output)
