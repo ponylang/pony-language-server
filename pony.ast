@@ -1,0 +1,142 @@
+Building builtin -> /Users/jairocaro-accinoviciana/.local/share/ponyup/ponyc-release-0.53.0-arm64-darwin/packages/builtin
+Building ../pony-example -> /Users/jairocaro-accinoviciana/pony-example
+(package:scope
+  (module:scope
+    (use x ("builtin" [nominal (id $0) (id String) x val x x]) x)
+    (class:scope
+      (id Custom)
+      x
+      ref
+      x
+      (members
+        (fvar (id name) (nominal (id $0) (id String) x val x x) x x [nominal (id $0) (id String) x val x x])
+        (fun:scope
+          box
+          (id string)
+          x
+          x
+          (nominal (id $0) (id String) x val x x)
+          x
+          (seq (fvarref (this [-> thistype (nominal (id $1) (id Custom) x ref x x)]) ((id name) [nominal (id $0) (id String) x val x x]) [nominal (id $0) (id String) x val x x]) [nominal (id $0) (id String) x val x x])
+          x
+        )
+        (new:scope
+          iso
+          (id create)
+          x
+          x
+          (nominal (id $1) (id Custom) x iso ^ x)
+          x
+          (seq
+            (=
+              (fvarref (this [nominal (id $1) (id Custom) x ref x x]) ((id name) [nominal (id $0) (id String) x val x x]) [nominal (id $0) (id String) x val x x])
+              ("test" [nominal (id $0) (id String) x val x x])
+              [nominal (id $0) (id String) x val ^ x]
+            )
+            (true [nominal (id $0) (id Bool) x val x x])
+            [nominal (id $0) (id Bool) x val x x]
+          )
+          x
+        )
+      )
+      x
+      x
+    )
+    (actor:scope
+      (id Main)
+      x
+      tag
+      x
+      (members
+        (flet (id env) (nominal (id $0) (id Env) x val x x) x x [nominal (id $0) (id Env) x val x x])
+        (new:scope
+          tag
+          (id create)
+          x
+          (params (param (id env') (nominal (id $0) (id Env) x val x x) x [nominal (id $0) (id Env) x val x x]))
+          (nominal (id $1) (id Main) x tag ^ x)
+          x
+          (seq
+            (=
+              (fletref (this [nominal (id $1) (id Main) x ref x x]) ((id env) [nominal (id $0) (id Env) x val x x]) [nominal (id $0) (id Env) x val x x])
+              (paramref (id env') [nominal (id $0) (id Env) x val x x])
+              [nominal (id $0) (id Env) x val ^ x]
+            )
+            [nominal (id $0) (id Env) x val ^ x]
+          )
+          x
+        )
+        (fun:scope
+          box
+          (id print_custom)
+          x
+          x
+          (nominal (id $0) (id None) x val x x)
+          x
+          (seq
+            (=
+              (let ((id name) [nominal (id $1) (id Custom) x iso x x]) (nominal (id $1) (id Custom) x iso x x) [nominal (id $1) (id Custom) x iso x x])
+              (call (newref (typeref x (id Custom) x [nominal (id $1) (id Custom) x ref x x]) (id create) [funtype iso x x (nominal (id $1) (id Custom) x iso ^ x)]) x x x [nominal (id $1) (id Custom) x iso ^ x])
+              [nominal (id $1) (id Custom) x iso ^ x]
+            )
+            (call
+              (beref
+                (fletref
+                  (fletref (this [-> thistype (nominal (id $1) (id Main) x ref x x)]) ((id env) [nominal (id $0) (id Env) x val x x]) [nominal (id $0) (id Env) x val x x])
+                  ((id out) [nominal (id $0) (id OutStream) x tag x x])
+                  [nominal (id $0) (id OutStream) x tag x x]
+                )
+                (id print)
+                [funtype
+                  tag
+                  x
+                  (params (param (id data) (uniontype (nominal (id $0) (id String) x val x x) (nominal (id $0) (id Array) (typeargs (nominal (id $0) (id U8) x val x x)) val x x)) x))
+                  (nominal (id $0) (id None) x val x x)
+                ]
+              )
+              (positionalargs
+                (seq
+                  (call (funref (letref (id name) [nominal (id $1) (id Custom) x iso x x]) (id string) [funtype box x x (nominal (id $0) (id String) x val x x)]) x x x [nominal (id $0) (id String) x val x x])
+                  [nominal (id $0) (id String) x val x x]
+                )
+              )
+              x
+              x
+              [nominal (id $0) (id None) x val x x]
+            )
+            (call (newref (typeref x (id None) x [nominal (id $0) (id None) x val x x]) (id create) [funtype val x x (nominal (id $0) (id None) x val ^ x)]) x x x [nominal (id $0) (id None) x val ^ x])
+            [nominal (id $0) (id None) x val ^ x]
+          )
+          x
+        )
+        (fun:scope
+          @
+          (id runtime_override_defaults)
+          x
+          (params (param (id rto) (nominal (id $0) (id RuntimeOptions) x ref x (id $0)) x [nominal (id $0) (id RuntimeOptions) x ref x (id $0)]))
+          (nominal (id $0) (id None) x val x x)
+          x
+          (seq
+            (true [nominal (id $0) (id Bool) x val x x])
+            (call (newref (typeref x (id None) x [nominal (id $0) (id None) x val x x]) (id create) [funtype val x x (nominal (id $0) (id None) x val ^ x)]) x x x [nominal (id $0) (id None) x val ^ x])
+            [nominal (id $0) (id None) x val ^ x]
+          )
+          x
+        )
+      )
+      x
+      x
+    )
+  )
+)
+Generating
+ Reachability
+ Selector painting
+ Data prototypes
+ Data types
+ Function prototypes
+ Functions
+ Descriptors
+Optimising
+Writing ./pony-example.o
+Linking ./pony-example

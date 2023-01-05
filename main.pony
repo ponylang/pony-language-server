@@ -14,13 +14,13 @@ actor Main
     | "stdio" => 
       let channel = Stdio(env, this, debug)
       lifecycle = LifecycleProtocol(channel, debug)
-      language = LanguageProtocol(channel, debug)
+      language = LanguageProtocol(env, channel, debug)
     else
       debug.print("Channel not implemented: " + channel_kind)
       debug.print("Defaulting to stdio")
       let channel = Stdio(env, this, debug)
       lifecycle = LifecycleProtocol(channel, debug)
-      language = LanguageProtocol(channel, debug)
+      language = LanguageProtocol(env, channel, debug)
     end
 
   be handle_message(msg: RequestMessage val) =>
