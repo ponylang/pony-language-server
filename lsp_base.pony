@@ -177,6 +177,8 @@ class BaseProtocol
 
     fun ref compose_message(msg: Message val): String =>
       let content = msg.json().string()
-      "Content-Length: " + content.size().string() + "\r\n"
+      "Content-Length: " + (content.size()).string() + "\r\n"
       + "\r\n"
       + content
+      + "\r\n"
+      + "\r\n"

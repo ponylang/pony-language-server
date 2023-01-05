@@ -3,6 +3,7 @@ actor Main
   let debug: Debugger
   let _env: Env
   let lifecycle: LifecycleProtocol
+  let language: LanguageProtocol
 
   new create(env: Env) =>
     _env = env
@@ -13,16 +14,20 @@ actor Main
     | "stdio" => 
       let channel = Stdio(env, this, debug)
       lifecycle = LifecycleProtocol(channel, debug)
+      language = LanguageProtocol(channel, debug)
     else
       debug.print("Channel not implemented: " + channel_kind)
       debug.print("Defaulting to stdio")
       let channel = Stdio(env, this, debug)
       lifecycle = LifecycleProtocol(channel, debug)
+      language = LanguageProtocol(channel, debug)
     end
 
   be handle_message(msg: RequestMessage val) =>
     match msg.method
     | "initialize" => lifecycle.handle_initialize(msg)
+    | "initialized" => lifecycle.handle_initialized(msg)
+    | "textDocument/hover" => language.handle_hover(msg)
     else
       debug.print("Method not implemented: " + msg.method)
     end
