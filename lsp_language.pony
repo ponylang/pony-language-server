@@ -45,7 +45,7 @@ class LanguageProtocol
         let notifier: ProcessNotify iso = consume client
         let binpath = FilePath(FileAuth(env.root), "/Users/jairocaro-accinoviciana/.local/share/ponyup/bin/ponyc")
         let args: Array[String] val = recover val 
-            let a = ["--astpackage"; "--pass=final"; "-V=0"]
+            let a = ["ponyc"; "--astpackage"; "--pass=final"; "-V=0"]
             a.>push(consume uri)
           end
         let sp_auth = StartProcessAuth(env.root)
@@ -73,7 +73,7 @@ class HoverAST is ProcessNotify
 
   fun ref stderr(process: ProcessMonitor ref, data: Array[U8] iso) =>
     let err = String.from_array(consume data)
-    debug.write("PROC ERROR: " + err)
+    debug.write(err)
 
   fun ref failed(process: ProcessMonitor ref, err: ProcessError) =>
     debug.print("FAILED: " + err.string())
