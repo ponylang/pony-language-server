@@ -4,6 +4,7 @@ actor Main
   let _env: Env
   let lifecycle: LifecycleProtocol
   let language: LanguageProtocol
+  let document: DocumentProtocol
 
   new create(env: Env) =>
     _env = env
@@ -14,13 +15,15 @@ actor Main
     | "stdio" => 
       let channel = Stdio(env, this, debug)
       lifecycle = LifecycleProtocol(channel, debug)
-      language = LanguageProtocol(env, channel, debug)
+      language = LanguageProtocol(channel, debug)
+      document = DocumentProtocol(channel, debug)
     else
       debug.print("Channel not implemented: " + channel_kind)
       debug.print("Defaulting to stdio")
       let channel = Stdio(env, this, debug)
       lifecycle = LifecycleProtocol(channel, debug)
-      language = LanguageProtocol(env, channel, debug)
+      language = LanguageProtocol(channel, debug)
+      document = DocumentProtocol(channel, debug)
     end
 
   be handle_message(msg: RequestMessage val) =>

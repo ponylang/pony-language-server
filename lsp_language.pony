@@ -8,10 +8,8 @@ class LanguageProtocol
   var initialized: Bool = false
   let channel: Stdio
   let debug: Debugger
-  let env: Env
 
-  new create(env': Env, channel': Stdio, debug': Debugger) =>
-    env = env'
+  new create(channel': Stdio, debug': Debugger) =>
     channel = channel'
     debug = debug'
 
