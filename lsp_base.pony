@@ -39,9 +39,9 @@ class RequestMessage
 
 class ResponseMessage
   let id: (I64 | String | None)
-  let result: (String | I64 | Bool | JsonObject)
+  let result: (String | I64 | Bool | JsonObject | None)
   let response_error: (None | ResponseError val)
-  new val create(id': (I64 | String | None), result': (String | I64 | Bool | JsonObject), response_error': (None | ResponseError val) = None) =>
+  new val create(id': (I64 | String | None), result': (String | I64 | Bool | JsonObject | None), response_error': (None | ResponseError val) = None) =>
     id = id'
     result = result'
     response_error = response_error'
@@ -132,8 +132,7 @@ class BaseProtocol
         return None 
       end
       (let data, let rest) = content_buffer.clone().chop(content_length.usize())
-      let datalog = data.clone()
-      let datalog2 = data.clone()
+      let datalog: String val = data.clone()
       try
         let doc = JsonDoc
         doc.parse(consume data)?
@@ -158,7 +157,7 @@ class BaseProtocol
             var errdata = try err.data("data")? as JsonObject else None end
             res = ResponseError(code, message, errdata)
           else
-            debug.print("Error decoding message: " + consume datalog)
+            debug.print("Error decoding message: " + datalog)
             return None
           end
         end
@@ -171,7 +170,7 @@ class BaseProtocol
         debug.print("\n\n-----------")
         debug.print("Error parsing message")
         debug.print(content_buffer.codepoints().string() + "/" + content_length.string())
-        debug.print(consume datalog2)
+        debug.print(datalog)
       end
     end
 
