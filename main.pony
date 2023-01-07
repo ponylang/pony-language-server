@@ -1,10 +1,10 @@
-
 actor Main
   let debug: Debugger
   let _env: Env
   let lifecycle: LifecycleProtocol
   let language: LanguageProtocol
   let document: DocumentProtocol
+
 
   new create(env: Env) =>
     _env = env
@@ -25,6 +25,7 @@ actor Main
       language = LanguageProtocol(channel, debug)
       document = DocumentProtocol(channel, debug)
     end
+
 
   be handle_message(msg: RequestMessage val) =>
     match msg.method

@@ -2,6 +2,19 @@
 
 Language server for Pony. See https://github.com/Microsoft/language-server-protocol for more information on the language server standard.
 
+## Structure
+
+The Main actor setup everything and maps commands to the proper lsp actor.
+
+The LSP protocol has been divided in actors based on the subcategories of
+the spec, these are the pony files starting with `lsp_`.
+
+The different channel implementations reside in the files prefixed with 
+`channel_`.
+
+## Extensions
+
+The VSCode extension resides in the folder `client_vscode`.
 
 ## Development
 

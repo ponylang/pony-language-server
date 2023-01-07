@@ -1,3 +1,10 @@
+// TODO: self shutdown when editor crashes
+// To support the case that the editor starting a server crashes an editor should also pass 
+// its process id to the server. This allows the server to monitor the editor process and to 
+// shutdown itself if the editor process dies. The process id pass on the command line should 
+// be the same as the one passed in the initialize parameters. The command line argument to use 
+// is --clientProcessId.
+
 use "immutable-json"
 use "collections"
 

@@ -8,10 +8,10 @@
 			"name": "Launch Client",
 			"runtimeExecutable": "${execPath}",
 			"args": [
-				"--extensionDevelopmentPath=${workspaceRoot}/client"
+				"--extensionDevelopmentPath=${workspaceRoot}/client_vscode"
 			],
 			"outFiles": [
-				"${workspaceRoot}/client/out/**/*.js"
+				"${workspaceRoot}/client_vscode/out/**/*.js"
 			],
 			"autoAttachChildProcesses": true,
 			"sourceMaps": true,
