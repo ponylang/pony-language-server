@@ -1,7 +1,7 @@
 use "immutable-json"
 use "collections"
 
-class LifecycleProtocol
+actor LifecycleProtocol
   var initialized: Bool = false
   var channel: Stdio
   var debug: Debugger
@@ -10,7 +10,7 @@ class LifecycleProtocol
     channel = channel'
     debug = debug'
 
-  fun handle_initialize(msg: RequestMessage val) =>
+  be handle_initialize(msg: RequestMessage val) =>
     if initialized then
       debug.print("Server already initialized")
       channel.send_message(ResponseMessage(msg.id, "", ResponseError(
@@ -45,5 +45,5 @@ class LifecycleProtocol
       end
     )))
     
-  fun handle_initialized(msg: RequestMessage val) =>
+  be handle_initialized(msg: RequestMessage val) =>
     None

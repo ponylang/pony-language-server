@@ -18,6 +18,10 @@ interface Message
   fun json(): JsonObject
 
 
+interface Notifier
+  be handle_message(msg: Message val)
+
+
 class RequestMessage
   let id: (I64 | String | None)
   let method: String
@@ -83,20 +87,26 @@ class ResponseError
     )
 
 
-class BaseProtocol
+actor BaseProtocol
   var line_buffer: String ref = String
   var content_buffer: String ref = String
   var headers: Map[String, String] = Map[String, String]
   var receiving_mode: ReceivingMode = ReceivingModeHeader
   var debug: Debugger
+  var notifier: Notifier tag
 
-  new ref create(debug': Debugger) => 
+  new create(debug': Debugger, notifier': Notifier tag) => 
     debug = debug'
+    notifier = notifier'
 
-  fun ref apply(data: String): (None | Message val) =>
-    match receiving_mode
-    | ReceivingModeHeader => receive_headers(data)
-    | ReceivingModeContent => receive_content(data)
+  be apply(data: String) =>
+    let res = 
+      match receiving_mode
+      | ReceivingModeHeader => receive_headers(data)
+      | ReceivingModeContent => receive_content(data)
+      end
+    match res
+    | let m: Message val => notifier.handle_message(m)
     end
 
   fun ref receive_headers(data: String): (None | Message val) =>
@@ -129,7 +139,7 @@ class BaseProtocol
     try
       let content_length: I64 val = (headers("Content-Length")?).i64()?
       if content_length > content_buffer.codepoints().i64() then 
-        return None 
+        return None
       end
       (let data, let rest) = content_buffer.clone().chop(content_length.usize())
       let datalog: String val = data.clone()
@@ -138,12 +148,8 @@ class BaseProtocol
         doc.parse(consume data)?
         let json: JsonObject  = doc.data as JsonObject
         var id: (String | I64 | None) = None
-        try 
-          id = json.data("id")? as String
-        end
-        try
-          id = json.data("id")? as I64
-        end
+        try id = json.data("id")? as String end
+        try id = json.data("id")? as I64 end
         var res: Message val
         try 
           var method = json.data("method")? as String
@@ -158,7 +164,7 @@ class BaseProtocol
             res = ResponseError(code, message, errdata)
           else
             debug.print("Error decoding message: " + datalog)
-            return None
+            return
           end
         end
         line_buffer = consume rest
@@ -174,7 +180,7 @@ class BaseProtocol
       end
     end
 
-    fun ref compose_message(msg: Message val): String =>
+    fun tag compose_message(msg: Message val): String =>
       let content = msg.json().string()
       "Content-Length: " + (content.size()).string() + "\r\n"
       + "\r\n"

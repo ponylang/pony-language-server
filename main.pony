@@ -31,6 +31,7 @@ actor Main
     | "initialize" => lifecycle.handle_initialize(msg)
     | "initialized" => lifecycle.handle_initialized(msg)
     | "textDocument/hover" => language.handle_hover(msg)
+    | "textDocument/didOpen" => document.handle_did_open(msg)
     else
       debug.print("Method not implemented: " + msg.method)
     end
