@@ -169,6 +169,7 @@ actor BaseProtocol
           var params = json.data("params")? as JsonObject
           res = RequestMessage(id, method, params)
         else
+          // TODO: handle ResponseMessages too
           try
             var err = json.data("error")? as JsonObject
             var code = err.data("code")? as I64

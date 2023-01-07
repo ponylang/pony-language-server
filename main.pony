@@ -28,6 +28,7 @@ actor Main
 
 
   be handle_message(msg: RequestMessage val) =>
+    // TODO: handle ResponseMessages too
     match msg.method
     | "initialize" => lifecycle.handle_initialize(msg)
     | "initialized" => lifecycle.handle_initialized(msg)
