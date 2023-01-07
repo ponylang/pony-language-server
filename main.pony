@@ -27,15 +27,22 @@ actor Main
     end
 
 
-  be handle_message(msg: RequestMessage val) =>
-    // TODO: handle ResponseMessages too
-    match msg.method
-    | "initialize" => lifecycle.handle_initialize(msg)
-    | "initialized" => lifecycle.handle_initialized(msg)
-    | "textDocument/hover" => language.handle_hover(msg)
-    | "textDocument/didOpen" => document.handle_did_open(msg)
-    else
-      debug.print("Method not implemented: " + msg.method)
+  be handle_message(msg: Message val) =>
+    match msg
+    | let r: RequestMessage val => 
+      debug.print("\n\n<-\n" + r.json().string())
+      match r.method
+      | "initialize" => lifecycle.handle_initialize(r)
+      | "initialized" => lifecycle.handle_initialized(r)
+      | "textDocument/hover" => language.handle_hover(r)
+      | "textDocument/didOpen" => document.handle_did_open(r)
+      else
+        debug.print("Method not implemented: " + r.method)
+      end
+    | let r: ResponseError val => 
+      debug.print("\n\n<-Err (unhandled)\n" + r.json().string())
+    | let r: ResponseMessage val => 
+      debug.print("\n\n<- (unhandled)\n" + r.json().string())
     end
 
   

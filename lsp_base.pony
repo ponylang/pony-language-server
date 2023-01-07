@@ -169,16 +169,21 @@ actor BaseProtocol
           var params = json.data("params")? as JsonObject
           res = RequestMessage(id, method, params)
         else
-          // TODO: handle ResponseMessages too
-          try
-            var err = json.data("error")? as JsonObject
-            var code = err.data("code")? as I64
-            var message = err.data("message")? as String
-            var errdata = try err.data("data")? as JsonObject else None end
-            res = ResponseError(code, message, errdata)
+          try 
+            let result = json.data("result")? as (String | I64 | Bool | JsonObject | None)
+            let response_error = json.data("error")? as (None | ResponseError val)
+            res = ResponseMessage(id, result, response_error)
           else
-            debug.print("Error decoding message: " + datalog)
-            return
+            try
+              var err = json.data("error")? as JsonObject
+              var code = err.data("code")? as I64
+              var message = err.data("message")? as String
+              var errdata = try err.data("data")? as JsonObject else None end
+              res = ResponseError(code, message, errdata)
+            else
+              debug.print("Error decoding message: " + datalog)
+              return
+            end
           end
         end
         line_buffer = consume rest
