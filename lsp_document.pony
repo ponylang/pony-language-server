@@ -4,15 +4,18 @@ use "files"
 use "backpressure"
 use "process"
 
+
 actor DocumentProtocol
   var initialized: Bool = false
   let channel: Stdio
   let debug: Debugger
   let cache: Map[String, String] ref = Map[String, String]
 
+
   new create(channel': Stdio, debug': Debugger) =>
     channel = channel'
     debug = debug'
+
 
   be handle_did_open(msg: RequestMessage val) =>
     channel.send_message(ResponseMessage(msg.id, None))

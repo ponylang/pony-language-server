@@ -1,14 +1,17 @@
 use "immutable-json"
 use "collections"
 
+
 actor LifecycleProtocol
   var initialized: Bool = false
   var channel: Stdio
   var debug: Debugger
 
+
   new create(channel': Stdio, debug': Debugger) =>
     channel = channel'
     debug = debug'
+
 
   be handle_initialize(msg: RequestMessage val) =>
     if initialized then
@@ -45,5 +48,6 @@ actor LifecycleProtocol
       end
     )))
     
+
   be handle_initialized(msg: RequestMessage val) =>
     None

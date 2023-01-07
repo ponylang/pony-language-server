@@ -4,14 +4,17 @@ use "files"
 use "backpressure"
 use "process"
 
+
 actor LanguageProtocol
   var initialized: Bool = false
   let channel: Stdio
   let debug: Debugger
 
+
   new create(channel': Stdio, debug': Debugger) =>
     channel = channel'
     debug = debug'
+
 
   be handle_hover(msg: RequestMessage val) =>
     channel.send_message(ResponseMessage(msg.id, JsonObject(

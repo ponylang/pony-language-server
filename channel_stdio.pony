@@ -2,13 +2,16 @@
 class InputNotifier is InputNotify
   let parent: Stdio
 
+
   new iso create(parent': Stdio) =>
     parent = parent'
+
 
   fun ref apply(data': Array[U8 val] iso): None val =>
     var data = String.from_array(consume data')
     parent.handle_data(data)
   
+
   fun ref dispose(): None val =>
     None
 

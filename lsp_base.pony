@@ -8,6 +8,7 @@
 use "immutable-json"
 use "collections"
 
+
 type ReceivingMode is (ReceivingModeHeader | ReceivingModeContent)
 primitive ReceivingModeHeader
 primitive ReceivingModeContent
@@ -102,9 +103,11 @@ actor BaseProtocol
   var debug: Debugger
   var notifier: Notifier tag
 
+
   new create(debug': Debugger, notifier': Notifier tag) => 
     debug = debug'
     notifier = notifier'
+
 
   be apply(data: String) =>
     let res = 
@@ -115,6 +118,7 @@ actor BaseProtocol
     match res
     | let m: Message val => notifier.handle_message(m)
     end
+
 
   fun ref receive_headers(data: String): (None | Message val) =>
     line_buffer.append(data)
@@ -137,9 +141,11 @@ actor BaseProtocol
       end
     end
 
+
   fun ref receive_content(data: String): (None | Message val) =>
     content_buffer.append(data)
     parse_message()
+
 
   fun ref parse_message(): (None | Message val) =>
     content_buffer.remove("\r\n")
@@ -186,6 +192,7 @@ actor BaseProtocol
         debug.print(datalog)
       end
     end
+
 
     fun tag compose_message(msg: Message val): String =>
       let content = msg.json().string()
