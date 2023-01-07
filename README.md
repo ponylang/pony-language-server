@@ -21,3 +21,6 @@ The VSCode extension resides in the folder `client_vscode`.
 To debug in VSCode, press F5, this will compile both the vscode extension in the client folder and the pony server, using the `build.sh` script.
 
 If pony compilation fails, the process will stop, so you can press F5 without fear.
+
+Right now, the Debugger actor residing in `debug.pony` will write anything passed to it to a log file relative to where the vscode debug instance is launched.
+This is because you cannot write to output if we use it as a channel to interact with vscode. This has to be updated to use proper LSP logging capabilities.
