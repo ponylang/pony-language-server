@@ -52,7 +52,7 @@ actor HandleHover
     character = character'
     channel = channel'
 
-  be handle_document_source(doc: String) =>
+  be handle_document_source(doc: Document val) =>
     channel.send_message(ResponseMessage(id, JsonObject(
       recover val
         Map[String, JsonType](1)
@@ -61,7 +61,9 @@ actor HandleHover
               Map[String, JsonType](2)
                 .>update("kind", "markdown")
                 .>update("value", "
-# Hover test from pony
+## Hover test
+
+Word detected:  "+doc.word_at_position(line, character)+"
                 ")
             end
           ))

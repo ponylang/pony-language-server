@@ -6,7 +6,7 @@ use "process"
 
 
 interface DocumentNotifier
-  be handle_document_source(doc: String)
+  be handle_document_source(doc: Document val)
 
 
 actor DocumentProtocol
@@ -37,4 +37,40 @@ actor DocumentProtocol
 
 
   be document_by_id(id: String, notifier: DocumentNotifier tag) =>
-    notifier.handle_document_source(cache.get_or_else(id, ""))
+    notifier.handle_document_source(Document(cache.get_or_else(id, "")))
+
+
+class Document
+  let text: String
+
+  new val create(text': String) =>
+    text = text'
+
+  fun word_at_position(line_number: I64, character: I64): String =>
+    let lines = text.split_by("\n")
+    let line = try lines(line_number.usize())? else
+      return ""
+    end
+    let characters = line.runes()
+    var word = ""
+    var index: I64 = 0
+    var target = false
+    var exit = false
+    for c in characters do
+      if character == index then
+        target = true
+      end
+      match c
+      | ' ' => if target then return try word.clone().>shift()? else "" end end; word = ""
+      | '(' => if target then return try word.clone().>shift()? else "" end end; word = ""
+      | '.' => if target then return try word.clone().>shift()? else "" end end; word = ""
+      | ')' => if target then return try word.clone().>shift()? else "" end end; word = ""
+      | ',' => if target then return try word.clone().>shift()? else "" end end; word = ""
+      | ';' => if target then return try word.clone().>shift()? else "" end end; word = ""
+      | '"' => if target then return try word.clone().>shift()? else "" end end; word = ""
+      | ':' => if target then return try word.clone().>shift()? else "" end end; word = ""
+      end
+      word = word + String.from_utf32(c)
+      index = index + 1
+    end
+    word
