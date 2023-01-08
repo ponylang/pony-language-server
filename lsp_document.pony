@@ -5,6 +5,10 @@ use "backpressure"
 use "process"
 
 
+interface DocumentNotifier
+  be handle_document_source(doc: String)
+
+
 actor DocumentProtocol
   var initialized: Bool = false
   let channel: Stdio
@@ -30,3 +34,7 @@ actor DocumentProtocol
         debug.print("ERROR retrieving textDocument uri: " + msg.json().string())
       end
     end
+
+
+  be document_by_id(id: String, notifier: DocumentNotifier tag) =>
+    notifier.handle_document_source(cache.get_or_else(id, ""))

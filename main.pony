@@ -15,15 +15,15 @@ actor Main
     | "stdio" => 
       let channel = Stdio(env, this, debug)
       lifecycle = LifecycleProtocol(channel, debug)
-      language = LanguageProtocol(channel, debug)
       document = DocumentProtocol(channel, debug)
+      language = LanguageProtocol(channel, debug, document)
     else
       debug.print("Channel not implemented: " + channel_kind)
       debug.print("Defaulting to stdio")
       let channel = Stdio(env, this, debug)
       lifecycle = LifecycleProtocol(channel, debug)
-      language = LanguageProtocol(channel, debug)
       document = DocumentProtocol(channel, debug)
+      language = LanguageProtocol(channel, debug, document)
     end
 
 
@@ -44,5 +44,4 @@ actor Main
     | let r: ResponseMessage val => 
       debug.print("\n\n<- (unhandled)\n" + r.json().string())
     end
-
-  
+    
