@@ -20,7 +20,12 @@ export async function activate(context: ExtensionContext) {
   let serverOptions: ServerOptions = {
     command: exe,
     args: ["stdio"],
-    transport: TransportKind.stdio
+    transport: TransportKind.stdio,
+    options: {
+      env: {
+        "PONYPATH": context.asAbsolutePath("packages"),
+      },
+    }
   };
 
   // Options to control the language client

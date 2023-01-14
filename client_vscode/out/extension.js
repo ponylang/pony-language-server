@@ -13,7 +13,12 @@ async function activate(context) {
     let serverOptions = {
         command: exe,
         args: ["stdio"],
-        transport: node_1.TransportKind.stdio
+        transport: node_1.TransportKind.stdio,
+        options: {
+            env: {
+                "PONYPATH": context.asAbsolutePath("packages"),
+            },
+        }
     };
     // Options to control the language client
     let clientOptions = {
