@@ -1,3 +1,6 @@
+use "lib:z"
+use "lib:c++"
+
 actor Main
   let debug: Debugger
   let _env: Env
@@ -11,19 +14,20 @@ actor Main
     debug = Debugger(env)
     let channel_kind = try env.args(1)? else "stdio" end
     debug.print("Initializing channel " + channel_kind)
+    let compiler = PonyCompiler(env, debug)
     match channel_kind
     | "stdio" => 
       let channel = Stdio(env, this, debug)
       lifecycle = LifecycleProtocol(channel, debug)
-      document = DocumentProtocol(channel, debug)
-      language = LanguageProtocol(channel, debug, document)
+      document = DocumentProtocol(compiler, channel, debug)
+      language = LanguageProtocol(compiler, channel, debug, document)
     else
       debug.print("Channel not implemented: " + channel_kind)
       debug.print("Defaulting to stdio")
       let channel = Stdio(env, this, debug)
       lifecycle = LifecycleProtocol(channel, debug)
-      document = DocumentProtocol(channel, debug)
-      language = LanguageProtocol(channel, debug, document)
+      document = DocumentProtocol(compiler, channel, debug)
+      language = LanguageProtocol(compiler, channel, debug, document)
     end
 
 

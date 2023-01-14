@@ -40,6 +40,11 @@ export async function activate(context: ExtensionContext) {
     clientOptions
   );
 
+
+  client.onNotification("pony/ver", (p) => {
+    showPony(p);
+  });
+
   // Start the client. This will also launch the server
   return client.start().catch(reason => {
     window.showWarningMessage(`Failed to run Pony Language Server (PLS): ${reason}`);

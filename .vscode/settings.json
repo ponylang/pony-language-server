@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "pass.h": "c",
+        "package.h": "c"
+    },
+    "cmake.sourceDirectory": "${workspaceFolder}/ponyc"
+}

@@ -3,6 +3,7 @@ use "collections"
 use "files"
 use "backpressure"
 use "process"
+use "random"
 
 
 interface DocumentNotifier
@@ -14,11 +15,15 @@ actor DocumentProtocol
   let channel: Stdio
   let debug: Debugger
   let cache: Map[String, String] ref = Map[String, String]
+  let compiler: PonyCompiler
+  let errors_notifier: ErrorsNotifier
 
 
-  new create(channel': Stdio, debug': Debugger) =>
+  new create(compiler': PonyCompiler, channel': Stdio, debug': Debugger) =>
     channel = channel'
     debug = debug'
+    compiler = compiler'
+    errors_notifier = ErrorsNotifier(channel, debug)
 
 
   be handle_did_open(msg: RequestMessage val) =>
@@ -30,6 +35,10 @@ actor DocumentProtocol
         let uri = text_document.data("uri")? as String val
         let text = text_document.data("text")? as String val
         cache.insert(uri, text)
+        let filepath = uri.clone()
+        filepath.replace("file://", "")
+        debug.print("DocumentProtocol calling compiler to check " + filepath.clone())
+        compiler(consume filepath, errors_notifier)
       else
         debug.print("ERROR retrieving textDocument uri: " + msg.json().string())
       end
@@ -63,8 +72,12 @@ class Document
       match c
       | ' ' => if target then return try word.clone().>shift()? else "" end end; word = ""
       | '(' => if target then return try word.clone().>shift()? else "" end end; word = ""
-      | '.' => if target then return try word.clone().>shift()? else "" end end; word = ""
       | ')' => if target then return try word.clone().>shift()? else "" end end; word = ""
+      | '{' => if target then return try word.clone().>shift()? else "" end end; word = ""
+      | '}' => if target then return try word.clone().>shift()? else "" end end; word = ""
+      | '[' => if target then return try word.clone().>shift()? else "" end end; word = ""
+      | ']' => if target then return try word.clone().>shift()? else "" end end; word = ""
+      | '.' => if target then return try word.clone().>shift()? else "" end end; word = ""
       | ',' => if target then return try word.clone().>shift()? else "" end end; word = ""
       | ';' => if target then return try word.clone().>shift()? else "" end end; word = ""
       | '"' => if target then return try word.clone().>shift()? else "" end end; word = ""
@@ -74,3 +87,71 @@ class Document
       index = index + 1
     end
     word
+
+
+actor ErrorsNotifier
+  let channel: Stdio
+  let debug: Debugger
+  let errors: Map[String, Array[JsonObject val]] = Map[String, Array[JsonObject val]]
+
+  new create(channel': Stdio, debug': Debugger) =>
+    channel = channel'
+    debug = debug'
+
+  be on_error(uri: String, line: USize, pos: USize, msg: String) =>
+    debug.print("ErrorsNotifier on_error received for " + uri)
+    var errorlist = 
+      try errors(uri)? else 
+        debug.print("Error, document not found in errors list: " + uri)
+        return 
+      end
+    errorlist.push(JsonObject(
+      recover val
+        Map[String, JsonType](2)
+          .>update("range", uri)
+          .>update("severity", I64(1)) // 1 = error
+          .>update("message", JsonObject(
+              recover val
+                Map[String, JsonType](2)
+                  .>update("start", JsonObject(
+                      recover val
+                        Map[String, JsonType](2)
+                          .>update("line", line.i64())
+                          .>update("character", pos.i64())
+                      end
+                    ))
+                  .>update("end", JsonObject(
+                      recover val
+                        Map[String, JsonType](2)
+                          .>update("line", line.i64())
+                          .>update("character", (pos + 10).i64())
+                      end
+                    ))
+              end
+            ))
+      end
+    ))
+    errors(uri) = errorlist
+
+  be done() =>
+    debug.print("ErrorsNotifier DONE! sending " + errors.size().string() + " errors")
+    for i in errors.keys() do
+      let rand = Rand
+      let n = rand.i64()
+      let errorlist: Array[(F64 val | I64 val | Bool val | None val | String val | JsonArray val | JsonObject val)] iso = []
+      try
+        for e in errors(i)?.values() do
+          errorlist.push(e)
+        end
+      else
+        debug.print("error getting errorlist of " + i)
+        continue
+      end
+      channel.send_message(RequestMessage(n, "textDocument/publishDiagnostics", JsonObject(
+        recover val
+          Map[String, JsonType](2)
+            .>update("uri", i)
+            .>update("diagnostics", JsonArray(recover val consume errorlist end))
+        end
+      )))
+    end

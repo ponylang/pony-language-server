@@ -10,9 +10,11 @@ actor LanguageProtocol
   let channel: Stdio
   let debug: Debugger
   let document: DocumentProtocol
+  let compiler: PonyCompiler
 
 
-  new create(channel': Stdio, debug': Debugger, document': DocumentProtocol) =>
+  new create(compiler': PonyCompiler, channel': Stdio, debug': Debugger, document': DocumentProtocol) =>
+    compiler = compiler'
     channel = channel'
     debug = debug'
     document = document'
@@ -27,7 +29,7 @@ actor LanguageProtocol
         let position = p.data("position")? as JsonObject
         let line = position.data("line")? as I64
         let character = position.data("character")? as I64
-        let handler = HandleHover(msg.id, uri, line, character, channel)
+        let handler = HandleHover(msg.id, uri, line, character, channel, compiler)
         document.document_by_id(uri, handler)
       else
         debug.print("ERROR retrieving textDocument uri: " + msg.json().string())
@@ -44,11 +46,13 @@ actor HandleHover
   let line: I64
   let character: I64
   let channel: Stdio
+  let compiler: PonyCompiler
 
-  new create(id': (I64 | String | None), uri': String, line': I64, character': I64, channel': Stdio) =>
+  new create(id': (I64 | String | None), uri': String, line': I64, character': I64, channel': Stdio, compiler': PonyCompiler) =>
     id = id'
     uri = uri'
     line = line'
+    compiler = compiler'
     character = character'
     channel = channel'
 

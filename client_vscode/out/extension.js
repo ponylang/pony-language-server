@@ -25,6 +25,9 @@ async function activate(context) {
     };
     // Create the language client and start the client.
     client = new node_1.LanguageClient('pony', 'Pony Language Server', serverOptions, clientOptions);
+    client.onNotification("pony/ver", (p) => {
+        showPony(p);
+    });
     // Start the client. This will also launch the server
     return client.start().catch(reason => {
         vscode_1.window.showWarningMessage(`Failed to run Pony Language Server (PLS): ${reason}`);
