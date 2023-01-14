@@ -10,25 +10,15 @@
 	"activationEvents": [
 		"onLanguage:pony"
 	],
+	"capabilities": {
+		"textDocument": {
+			"publishDiagnostics": {
+				"relatedInformation": false
+			}
+		}
+	},
 	"main": "./out/extension",
 	"contributes": {
-		"configuration": {
-			"type": "object",
-			"title": "Pony configuration",
-			"properties": {
-				"PonyLanguageServer.trace.server": {
-					"scope": "window",
-					"type": "string",
-					"enum": [
-						"off",
-						"messages",
-						"verbose"
-					],
-					"default": "verbose",
-					"description": "Traces the communication between VS Code and the Pony language server."
-				}
-			}
-		},
 		"languages": [
 			{
 				"id": "pony",

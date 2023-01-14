@@ -14,9 +14,6 @@ actor Main
     debug = Debugger(env)
     let channel_kind = try env.args(1)? else "stdio" end
     debug.print("Initializing channel " + channel_kind)
-    for va in env.vars.values() do
-      debug.print("ENV " + va)
-    end
     let compiler = PonyCompiler(env, debug)
     match channel_kind
     | "stdio" => 

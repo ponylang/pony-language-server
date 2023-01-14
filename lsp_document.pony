@@ -27,7 +27,7 @@ actor DocumentProtocol
 
 
   be handle_did_open(msg: RequestMessage val) =>
-    channel.send_message(ResponseMessage(msg.id, None))
+    // channel.send_message(ResponseMessage(msg.id, None))
     match msg.params
     | let p: JsonObject => 
       try
@@ -98,19 +98,16 @@ actor ErrorsNotifier
     channel = channel'
     debug = debug'
 
-  be on_error(uri: String, line: USize, pos: USize, msg: String) =>
-    debug.print("ErrorsNotifier on_error received for " + uri)
-    var errorlist = 
-      try errors(uri)? else 
-        debug.print("Error, document not found in errors list: " + uri)
-        return 
-      end
+  be on_error(filepath: String, line: USize, pos: USize, msg: String) =>
+    let uri: String val = "file://" + filepath
+    var errorlist = try errors(uri)? else Array[JsonObject val] end
     errorlist.push(JsonObject(
       recover val
         Map[String, JsonType](2)
           .>update("range", uri)
           .>update("severity", I64(1)) // 1 = error
-          .>update("message", JsonObject(
+          .>update("range", msg)
+          .>update("range", JsonObject(
               recover val
                 Map[String, JsonType](2)
                   .>update("start", JsonObject(
@@ -124,7 +121,7 @@ actor ErrorsNotifier
                       recover val
                         Map[String, JsonType](2)
                           .>update("line", line.i64())
-                          .>update("character", (pos + 10).i64())
+                          .>update("character", pos.i64())
                       end
                     ))
               end
@@ -134,7 +131,6 @@ actor ErrorsNotifier
     errors(uri) = errorlist
 
   be done() =>
-    debug.print("ErrorsNotifier DONE! sending " + errors.size().string() + " errors")
     for i in errors.keys() do
       let rand = Rand
       let n = rand.i64()

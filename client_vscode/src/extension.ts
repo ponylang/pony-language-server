@@ -1,6 +1,6 @@
 // https://github.com/zigtools/zls-vscode/blob/master/src/extension.ts
 
-import { ExtensionContext, window, StatusBarAlignment, StatusBarItem, workspace } from 'vscode';
+import { ExtensionContext, window, StatusBarAlignment, StatusBarItem, workspace, OutputChannel } from 'vscode';
 
 import {
   ExecutableOptions,
@@ -11,8 +11,11 @@ import {
 } from 'vscode-languageclient/node';
 
 let client: LanguageClient;
+let outputChannel: OutputChannel;
 
 export async function activate(context: ExtensionContext) {
+  outputChannel = window.createOutputChannel("Pony Language Server");
+
   let exe = context.asAbsolutePath("pony-lsp");
   showPony(exe);
   // If the extension is launched in debug mode then the debug server options are used
@@ -31,10 +34,10 @@ export async function activate(context: ExtensionContext) {
   // Options to control the language client
   let clientOptions: LanguageClientOptions = {
     documentSelector: [{ scheme: "file", language: "pony" }],
-    outputChannelName: "Pony LSP client",
     synchronize: {
       fileEvents: workspace.createFileSystemWatcher('{**/*.pony}')
-    }
+    },
+    outputChannel
   };
 
   // Create the language client and start the client.
@@ -45,11 +48,7 @@ export async function activate(context: ExtensionContext) {
     clientOptions
   );
 
-
-  client.onNotification("pony/ver", (p) => {
-    showPony(p);
-  });
-
+  outputChannel.appendLine("Pony LSP ready");
   // Start the client. This will also launch the server
   return client.start().catch(reason => {
     window.showWarningMessage(`Failed to run Pony Language Server (PLS): ${reason}`);
