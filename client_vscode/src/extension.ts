@@ -27,16 +27,15 @@ export async function activate(context: ExtensionContext) {
     options: {
       env: {
         "PONYPATH": context.asAbsolutePath("packages"),
-      },
+      }
     }
   };
 
   // Options to control the language client
   let clientOptions: LanguageClientOptions = {
     documentSelector: [{ scheme: "file", language: "pony" }],
-    synchronize: {
-      fileEvents: workspace.createFileSystemWatcher('{**/*.pony}')
-    },
+    diagnosticCollectionName: "Pony",
+    stdioEncoding: "utf-8",
     outputChannel
   };
 

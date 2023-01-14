@@ -22,7 +22,7 @@ class Header
     value = value'
 
 
-interface Message
+trait Message
   fun json(): JsonObject
 
 
@@ -30,7 +30,7 @@ interface Notifier
   be handle_message(msg: Message val)
 
 
-class RequestMessage
+class RequestMessage is Message
   let id: (I64 | String | None)
   let method: String
   let params: (None | JsonObject val)
@@ -42,6 +42,7 @@ class RequestMessage
     JsonObject(
       recover val
         Map[String, JsonType](3)
+          .>update("jsonrpc", "2.0")
           .>update("id", id)
           .>update("method", method)
           .>update("params", params)
@@ -49,7 +50,7 @@ class RequestMessage
     )
 
 
-class ResponseMessage
+class ResponseMessage is Message
   let id: (I64 | String | None)
   let result: (String | I64 | Bool | JsonObject | None)
   let response_error: (None | ResponseError val)
@@ -61,6 +62,7 @@ class ResponseMessage
     JsonObject(
       recover val
         let m = Map[String, JsonType](2)
+          .>update("jsonrpc", "2.0")
           .>update("id", id)
         match result
         | let r: String val => m.update("result", r)
@@ -171,19 +173,26 @@ actor BaseProtocol
         else
           try 
             let result = json.data("result")? as (String | I64 | Bool | JsonObject | None)
-            let response_error = json.data("error")? as (None | ResponseError val)
-            res = ResponseMessage(id, result, response_error)
-          else
-            try
-              var err = json.data("error")? as JsonObject
-              var code = err.data("code")? as I64
-              var message = err.data("message")? as String
-              var errdata = try err.data("data")? as JsonObject else None end
-              res = ResponseError(code, message, errdata)
-            else
-              debug.print("Error decoding message: " + datalog)
-              return
+            var response_error = json.data("error")? as (None | JsonObject val)
+            var resp_err: (None | ResponseError val) = None
+            match response_error
+            | let err: JsonObject val => 
+              try
+                var code = err.data("code")? as I64
+                var message = err.data("message")? as String
+                var errdata = try err.data("data")? as JsonObject else None end
+                resp_err = ResponseError(code, message, errdata)
+              end
             end
+            res = ResponseMessage(id, result, resp_err)
+          else
+            debug.print("\n<- Error request parsing message")
+            debug.print(datalog.clone())
+            line_buffer = rest.clone()
+            content_buffer = String
+            headers = Map[String, String]
+            receiving_mode = ReceivingModeHeader
+            return
           end
         end
         line_buffer = consume rest
@@ -193,7 +202,7 @@ actor BaseProtocol
         res
       else
         debug.print("\n\n-----------")
-        debug.print("Error parsing message")
+        debug.print("Error initial parsing message")
         debug.print(content_buffer.codepoints().string() + "/" + content_length.string())
         debug.print(datalog)
       end
@@ -202,8 +211,6 @@ actor BaseProtocol
 
     fun tag compose_message(msg: Message val): String =>
       let content = msg.json().string()
-      "Content-Length: " + (content.size()).string() + "\r\n"
+      "Content-Length: " + content.size().string() + "\r\n"
       + "\r\n"
       + content
-      + "\r\n"
-      + "\r\n"

@@ -43,8 +43,6 @@ actor Main
       else
         debug.print("Method not implemented: " + r.method)
       end
-    | let r: ResponseError val => 
-      debug.print("\n\n<-Err (unhandled)\n" + r.json().string())
     | let r: ResponseMessage val => 
       debug.print("\n\n<- (unhandled)\n" + r.json().string())
     end

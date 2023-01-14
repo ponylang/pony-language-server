@@ -104,9 +104,8 @@ actor ErrorsNotifier
     errorlist.push(JsonObject(
       recover val
         Map[String, JsonType](2)
-          .>update("range", uri)
-          .>update("severity", I64(1)) // 1 = error
-          .>update("range", msg)
+          //.>update("severity", I64(1)) // 1 = error
+          .>update("message", msg)
           .>update("range", JsonObject(
               recover val
                 Map[String, JsonType](2)
@@ -133,7 +132,7 @@ actor ErrorsNotifier
   be done() =>
     for i in errors.keys() do
       let rand = Rand
-      let n = rand.i64()
+      let n = rand.i32()
       let errorlist: Array[(F64 val | I64 val | Bool val | None val | String val | JsonArray val | JsonObject val)] iso = []
       try
         for e in errors(i)?.values() do
@@ -143,7 +142,7 @@ actor ErrorsNotifier
         debug.print("error getting errorlist of " + i)
         continue
       end
-      channel.send_message(RequestMessage(n, "textDocument/publishDiagnostics", JsonObject(
+      channel.send_message(RequestMessage(n.i64(), "textDocument/publishDiagnostics", JsonObject(
         recover val
           Map[String, JsonType](2)
             .>update("uri", i)

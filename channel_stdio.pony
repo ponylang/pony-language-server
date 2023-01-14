@@ -45,4 +45,5 @@ actor Stdio
   be send_message(msg: Message val) =>
     let output = protocol_base.compose_message(msg)
     out.write(output)
+    out.flush()
     debug.print("\n\n->\n" + output)

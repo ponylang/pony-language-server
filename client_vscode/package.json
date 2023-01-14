@@ -10,13 +10,6 @@
 	"activationEvents": [
 		"onLanguage:pony"
 	],
-	"capabilities": {
-		"textDocument": {
-			"publishDiagnostics": {
-				"relatedInformation": false
-			}
-		}
-	},
 	"main": "./out/extension",
 	"contributes": {
 		"languages": [
