@@ -49,7 +49,7 @@ function deactivate() {
 exports.deactivate = deactivate;
 function showPony(p) {
     exports.ponyVerEntry = vscode_1.window.createStatusBarItem(vscode_1.StatusBarAlignment.Left);
-    exports.ponyVerEntry.text = `Pony LSP ` + p;
+    exports.ponyVerEntry.text = `Pony LSP ✓`;
     exports.ponyVerEntry.show();
 }
 exports.showPony = showPony;

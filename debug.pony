@@ -11,6 +11,8 @@ actor Debugger
     channel = channel'
 
   be print(data: String) => None
+    // This generates too much load into vscode and makes it crash
+    // TODO: Find a way to batch log writes
     // pending_logs.push(data)
     // match channel
     // | let c: Stdio => 

@@ -17,7 +17,7 @@ export async function activate(context: ExtensionContext) {
   outputChannel = window.createOutputChannel("Pony Language Server");
 
   let exe = context.asAbsolutePath("pony-lsp");
-  showPony(exe);
+  showPony(true);
   // If the extension is launched in debug mode then the debug server options are used
   // Otherwise the run options are used
   let serverOptions: ServerOptions = {
@@ -52,6 +52,7 @@ export async function activate(context: ExtensionContext) {
   // Start the client. This will also launch the server
   return client.start().catch(reason => {
     window.showWarningMessage(`Failed to run Pony Language Server (PLS): ${reason}`);
+    showPony(false);
     client = null;
   });
 }
@@ -65,8 +66,9 @@ export function deactivate(): Thenable<void> | undefined {
 
 export var ponyVerEntry: StatusBarItem;
 
-export function showPony(p) {
+export function showPony(good) {
   ponyVerEntry = window.createStatusBarItem(StatusBarAlignment.Left);
-  ponyVerEntry.text = `Pony LSP ` + p;
+  if (good) ponyVerEntry.text = `Pony LSP ✓`;
+  else ponyVerEntry.text = `Pony LSP ✗`;
   ponyVerEntry.show();
 }
