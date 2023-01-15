@@ -9,7 +9,7 @@ let outputChannel;
 async function activate(context) {
     outputChannel = vscode_1.window.createOutputChannel("Pony Language Server");
     let exe = context.asAbsolutePath("pony-lsp");
-    showPony(exe);
+    showPony(true);
     // If the extension is launched in debug mode then the debug server options are used
     // Otherwise the run options are used
     let serverOptions = {
@@ -36,6 +36,7 @@ async function activate(context) {
     // Start the client. This will also launch the server
     return client.start().catch(reason => {
         vscode_1.window.showWarningMessage(`Failed to run Pony Language Server (PLS): ${reason}`);
+        showPony(false);
         client = null;
     });
 }
@@ -47,9 +48,12 @@ function deactivate() {
     return client.stop();
 }
 exports.deactivate = deactivate;
-function showPony(p) {
+function showPony(good) {
     exports.ponyVerEntry = vscode_1.window.createStatusBarItem(vscode_1.StatusBarAlignment.Left);
-    exports.ponyVerEntry.text = `Pony LSP ✓`;
+    if (good)
+        exports.ponyVerEntry.text = `Pony LSP ✓`;
+    else
+        exports.ponyVerEntry.text = `Pony LSP ✗`;
     exports.ponyVerEntry.show();
 }
 exports.showPony = showPony;
