@@ -41,11 +41,14 @@ class RequestMessage is Message
   fun json(): JsonObject =>
     JsonObject(
       recover val
-        Map[String, JsonType](3)
+        let m = Map[String, JsonType](3)
           .>update("jsonrpc", "2.0")
-          .>update("id", id)
-          .>update("method", method)
-          .>update("params", params)
+        match id
+        | let i: I64 => m.update("id", id)
+        | let i: String => m.update("id", id)
+        end
+        m.>update("method", method)
+        .>update("params", params)
       end
     )
 
