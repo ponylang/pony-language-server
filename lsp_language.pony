@@ -56,20 +56,20 @@ actor HandleHover
     character = character'
     channel = channel'
 
-  be handle_document_source(doc: Document val) =>
-    channel.send_message(ResponseMessage(id, JsonObject(
-      recover val
-        Map[String, JsonType](1)
-          .>update("contents", JsonObject(
-            recover val
-              Map[String, JsonType](2)
-                .>update("kind", "markdown")
-                .>update("value", "
-## Hover test
+  be handle_document_source(doc: Document val) => None
+//     channel.send_message(ResponseMessage(id, JsonObject(
+//       recover val
+//         Map[String, JsonType](1)
+//           .>update("contents", JsonObject(
+//             recover val
+//               Map[String, JsonType](2)
+//                 .>update("kind", "markdown")
+//                 .>update("value", "
+// ## Hover test
 
-Word detected:  "+doc.word_at_position(line, character)+"
-                ")
-            end
-          ))
-      end
-    )))
+// Word detected:  "+doc.word_at_position(line, character)+"
+//                 ")
+//             end
+//           ))
+//       end
+//     )))
