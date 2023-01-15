@@ -11,13 +11,14 @@ actor Main
 
   new create(env: Env) =>
     _env = env
-    debug = Debugger(env)
+    debug = Debugger
     let channel_kind = try env.args(1)? else "stdio" end
     debug.print("Initializing channel " + channel_kind)
     let compiler = PonyCompiler(env, debug)
     match channel_kind
     | "stdio" => 
       let channel = Stdio(env, this, debug)
+      debug.connect_channel(channel)
       lifecycle = LifecycleProtocol(channel, debug)
       document = DocumentProtocol(compiler, channel, debug)
       language = LanguageProtocol(compiler, channel, debug, document)
@@ -25,6 +26,7 @@ actor Main
       debug.print("Channel not implemented: " + channel_kind)
       debug.print("Defaulting to stdio")
       let channel = Stdio(env, this, debug)
+      debug.connect_channel(channel)
       lifecycle = LifecycleProtocol(channel, debug)
       document = DocumentProtocol(compiler, channel, debug)
       language = LanguageProtocol(compiler, channel, debug, document)

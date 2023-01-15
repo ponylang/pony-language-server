@@ -1,18 +1,26 @@
 use "files"
+use "immutable-json"
+use "collections"
 
 
 actor Debugger
-  let env: Env
-  let outfile: File
+  var channel: (Stdio | None) = None
+  var pending_logs: Array[String] = Array[String]
 
-  new create(env': Env) =>
-    env = env'
-    // TODO: port to LSP tracing
-    let path = FilePath(FileAuth(env.root), Path.abs("pony-lsp.log"))
-    outfile = File(path)
+  be connect_channel(channel': Stdio) =>
+    channel = channel'
 
   be print(data: String) =>
-    outfile.write(data + "\n")
-
-  be write(data: String) =>
-    outfile.write(data)
+    pending_logs.push(data)
+    match channel
+    | let c: Stdio => 
+        for m in pending_logs.values() do
+          c.send_message(RequestMessage(None, "$/logTrace", JsonObject(
+            recover val
+              Map[String, JsonType](1)
+                .>update("message", m)
+            end
+          )))
+        end
+        pending_logs.clear()
+    end

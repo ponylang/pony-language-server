@@ -36,7 +36,8 @@ export async function activate(context: ExtensionContext) {
     documentSelector: [{ scheme: "file", language: "pony" }],
     diagnosticCollectionName: "Pony",
     stdioEncoding: "utf-8",
-    outputChannel
+    traceOutputChannel: outputChannel,
+    outputChannel: outputChannel,
   };
 
   // Create the language client and start the client.
