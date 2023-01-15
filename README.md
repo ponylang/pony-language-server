@@ -18,9 +18,22 @@ The VSCode extension resides in the folder `client_vscode`.
 
 ## Development
 
-To debug in VSCode, press F5, this will compile both the vscode extension in the client folder and the pony server, using the `build.sh` script.
+---
+`libponyc-standalone` is needed for this to compile. Right now it is only built on
+linux, for macos you will need this change: https://github.com/ponylang/ponyc/pull/4303
 
-If pony compilation fails, the process will stop, so you can press F5 without fear.
+For windows, you will have to find your own way at the moment.
+
+---
+
+To debug in VSCode, press `F5`, this will compile both the vscode extension in the client folder and the pony server, using the `build.sh` script.
+
+If pony compilation fails, the process will stop, so you can press `F5` without fear.
 
 Right now, the Debugger actor residing in `debug.pony` will write anything passed to it to a log file relative to where the vscode debug instance is launched.
 This is because you cannot write to output if we use it as a channel to interact with vscode. This has to be updated to use proper LSP logging capabilities.
+
+## Packing VSCode extension
+
+You can pack the extension by running `vsce pack` in the client_vscode folder. You
+will get a `pony.vsix` file which you can install in vscode using `code --install-extension pony.vsix` 
