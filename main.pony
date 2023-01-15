@@ -40,6 +40,7 @@ actor Main
       | "initialized" => lifecycle.handle_initialized(r)
       | "textDocument/hover" => language.handle_hover(r)
       | "textDocument/didOpen" => document.handle_did_open(r)
+      | "textDocument/didSave" => document.handle_did_save(r)
       else
         debug.print("Method not implemented: " + r.method)
       end

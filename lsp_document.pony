@@ -16,18 +16,16 @@ actor DocumentProtocol
   let debug: Debugger
   let cache: Map[String, String] ref = Map[String, String]
   let compiler: PonyCompiler
-  let errors_notifier: ErrorsNotifier
 
 
   new create(compiler': PonyCompiler, channel': Stdio, debug': Debugger) =>
     channel = channel'
     debug = debug'
     compiler = compiler'
-    errors_notifier = ErrorsNotifier(channel, debug)
 
 
   be handle_did_open(msg: RequestMessage val) =>
-    // channel.send_message(ResponseMessage(msg.id, None))
+    let errors_notifier = ErrorsNotifier(channel, debug)
     match msg.params
     | let p: JsonObject => 
       try
@@ -38,6 +36,24 @@ actor DocumentProtocol
         let filepath = uri.clone()
         filepath.replace("file://", "")
         debug.print("DocumentProtocol calling compiler to check " + filepath.clone())
+        errors_notifier.track_file(filepath.clone())
+        compiler(consume filepath, errors_notifier)
+      else
+        debug.print("ERROR retrieving textDocument uri: " + msg.json().string())
+      end
+    end
+
+  be handle_did_save(msg: RequestMessage val) =>
+    let errors_notifier = ErrorsNotifier(channel, debug)
+    match msg.params
+    | let p: JsonObject => 
+      try
+        let text_document = p.data("textDocument")? as JsonObject
+        let uri = text_document.data("uri")? as String val
+        let filepath = uri.clone()
+        filepath.replace("file://", "")
+        debug.print("DocumentProtocol calling compiler to check " + filepath.clone())
+        errors_notifier.track_file(filepath.clone())
         compiler(consume filepath, errors_notifier)
       else
         debug.print("ERROR retrieving textDocument uri: " + msg.json().string())
@@ -98,6 +114,10 @@ actor ErrorsNotifier
     channel = channel'
     debug = debug'
 
+  be track_file(filepath: String) =>
+    let errorlist = try errors(filepath)? else Array[JsonObject val] end
+    errors(filepath) = errorlist
+
   be on_error(filepath: String, line: USize, pos: USize, msg: String) =>
     let uri: String val = "file://" + filepath
     var errorlist = try errors(uri)? else Array[JsonObject val] end
@@ -136,9 +156,6 @@ actor ErrorsNotifier
         for e in errors(i)?.values() do
           errorlist.push(e)
         end
-      else
-        debug.print("error getting errorlist of " + i)
-        continue
       end
       channel.send_message(RequestMessage(None, "textDocument/publishDiagnostics", JsonObject(
         recover val
