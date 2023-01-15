@@ -27,7 +27,8 @@ async function activate(context) {
         documentSelector: [{ scheme: "file", language: "pony" }],
         diagnosticCollectionName: "Pony",
         stdioEncoding: "utf-8",
-        outputChannel
+        traceOutputChannel: outputChannel,
+        outputChannel: outputChannel,
     };
     // Create the language client and start the client.
     client = new node_1.LanguageClient('pony', 'Pony Language Server', serverOptions, clientOptions);

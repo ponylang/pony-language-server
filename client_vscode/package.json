@@ -24,7 +24,7 @@
 						"messages",
 						"verbose"
 					],
-					"default": "messages",
+					"default": "off",
 					"description": "Traces the communication between VS Code and the Pony language server."
 				}
 			}
