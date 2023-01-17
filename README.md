@@ -24,6 +24,7 @@ The VSCode extension resides in the folder `client_vscode`.
 
 - `libponyc-standalone` is needed for pony-ast to compile. Right now it is only built on
 linux, for macos you will need this change: https://github.com/ponylang/ponyc/pull/4303. For windows, you will have to find your own way at the moment.
+IMPORTANT: libponyc has to be compiled in debug mode
 
 
 - `stdlib` is required for libponyc to work, so the environment variable
