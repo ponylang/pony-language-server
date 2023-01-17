@@ -28,7 +28,8 @@ actor LifecycleProtocol
             recover val
               Map[String, JsonType](2)
                 .>update("hoverProvider", true)
-                .>update("textDocumentSync", I64(2)) // Full sync
+                // Full sync seems to be needed to receive textDocument/didSave
+                .>update("textDocumentSync", I64(2))
                 // We are using publish diagnostics, owned by the server
                 // this capability provides pull diagnostics, owned by the client
                 // .>update("diagnosticProvider", JsonObject(

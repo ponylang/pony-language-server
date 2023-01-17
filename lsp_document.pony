@@ -6,15 +6,10 @@ use "process"
 use "random"
 
 
-interface DocumentNotifier
-  be handle_document_source(doc: Document val)
-
-
 actor DocumentProtocol
   var initialized: Bool = false
   let channel: Stdio
   let debug: Debugger
-  let cache: Map[String, String] ref = Map[String, String]
   let compiler: PonyCompiler
 
 
@@ -32,7 +27,6 @@ actor DocumentProtocol
         let text_document = p.data("textDocument")? as JsonObject
         let uri = text_document.data("uri")? as String val
         let text = text_document.data("text")? as String val
-        cache.insert(uri, text)
         let filepath = uri.clone()
         filepath.replace("file://", "")
         debug.print("DocumentProtocol calling compiler to check " + filepath.clone())
@@ -59,50 +53,6 @@ actor DocumentProtocol
         debug.print("ERROR retrieving textDocument uri: " + msg.json().string())
       end
     end
-
-
-  be document_by_id(id: String, notifier: DocumentNotifier tag) =>
-    notifier.handle_document_source(Document(cache.get_or_else(id, "")))
-
-
-class Document
-  let text: String
-
-  new val create(text': String) =>
-    text = text'
-
-  fun word_at_position(line_number: I64, character: I64): String =>
-    let lines = text.split_by("\n")
-    let line = try lines(line_number.usize())? else
-      return ""
-    end
-    let characters = line.runes()
-    var word = ""
-    var index: I64 = 0
-    var target = false
-    var exit = false
-    for c in characters do
-      if character == index then
-        target = true
-      end
-      match c
-      | ' ' => if target then return try word.clone().>shift()? else "" end end; word = ""
-      | '(' => if target then return try word.clone().>shift()? else "" end end; word = ""
-      | ')' => if target then return try word.clone().>shift()? else "" end end; word = ""
-      | '{' => if target then return try word.clone().>shift()? else "" end end; word = ""
-      | '}' => if target then return try word.clone().>shift()? else "" end end; word = ""
-      | '[' => if target then return try word.clone().>shift()? else "" end end; word = ""
-      | ']' => if target then return try word.clone().>shift()? else "" end end; word = ""
-      | '.' => if target then return try word.clone().>shift()? else "" end end; word = ""
-      | ',' => if target then return try word.clone().>shift()? else "" end end; word = ""
-      | ';' => if target then return try word.clone().>shift()? else "" end end; word = ""
-      | '"' => if target then return try word.clone().>shift()? else "" end end; word = ""
-      | ':' => if target then return try word.clone().>shift()? else "" end end; word = ""
-      end
-      word = word + String.from_utf32(c)
-      index = index + 1
-    end
-    word
 
 
 actor ErrorsNotifier

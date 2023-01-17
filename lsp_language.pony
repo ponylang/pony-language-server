@@ -29,8 +29,6 @@ actor LanguageProtocol
         let position = p.data("position")? as JsonObject
         let line = position.data("line")? as I64
         let character = position.data("character")? as I64
-        let handler = HandleHover(msg.id, uri, line, character, channel, compiler)
-        document.document_by_id(uri, handler)
       else
         debug.print("ERROR retrieving textDocument uri: " + msg.json().string())
         channel.send_message(ResponseMessage(msg.id, None, ResponseError(-32700, "parse error")))
@@ -39,37 +37,3 @@ actor LanguageProtocol
       channel.send_message(ResponseMessage(msg.id, None, ResponseError(-32700, "parse error")))
     end
 
-
-actor HandleHover
-  let id: (I64 | String | None)
-  let uri: String
-  let line: I64
-  let character: I64
-  let channel: Stdio
-  let compiler: PonyCompiler
-
-  new create(id': (I64 | String | None), uri': String, line': I64, character': I64, channel': Stdio, compiler': PonyCompiler) =>
-    id = id'
-    uri = uri'
-    line = line'
-    compiler = compiler'
-    character = character'
-    channel = channel'
-
-  be handle_document_source(doc: Document val) => None
-//     channel.send_message(ResponseMessage(id, JsonObject(
-//       recover val
-//         Map[String, JsonType](1)
-//           .>update("contents", JsonObject(
-//             recover val
-//               Map[String, JsonType](2)
-//                 .>update("kind", "markdown")
-//                 .>update("value", "
-// ## Hover test
-
-// Word detected:  "+doc.word_at_position(line, character)+"
-//                 ")
-//             end
-//           ))
-//       end
-//     )))
