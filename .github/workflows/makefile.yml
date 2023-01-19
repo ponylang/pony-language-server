@@ -25,6 +25,12 @@ jobs:
       with:
         submodules: true
 
+    - name: Install awscli and awsebcli
+      if: ${{ contains(matrix.os, 'macos') }}
+      run: |
+        brew update
+        brew install libressl
+
     - name: build
       run: cd $GITHUB_WORKSPACE && bash build.sh
 
