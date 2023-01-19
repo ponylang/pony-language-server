@@ -9,9 +9,9 @@ export PATH=/home/runner/.local/share/ponyup/bin:$PATH
 # MacOS
 export PATH=/Users/runner/.local/share/ponyup/bin:$PATH
 if [ "$OS" = "windows-latest" ]; then
-sh -c "$(curl --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/ponylang/ponyup/latest-release/ponyup-init.sh)"
-else
 Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/ponylang/ponyup/latest-release/ponyup-init.ps1' -Outfile ponyup-init.ps1 &.\ponyup-init.ps1
+else
+sh -c "$(curl --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/ponylang/ponyup/latest-release/ponyup-init.sh)"
 fi
 ponyup update ponyc release-$PONY_VERSION
 cd ponyc && git fetch origin && git checkout tags/$PONY_VERSION
