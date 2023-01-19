@@ -10,6 +10,7 @@ ponyup update ponyc debug-$PONY_VERSION
 # ponyc/build/debug/ponyc -o client_vscode -b pony-lsp
 # we also need the pony stdlib, copy to the extension folder
 cd ponyc && git checkout tags/$PONY_VERSION
+git pull
 cp -r ponyc/packages client_vscode
 cd client_vscode
 # compile the extension
