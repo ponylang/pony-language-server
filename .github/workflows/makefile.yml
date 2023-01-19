@@ -7,9 +7,18 @@ on:
     branches: [ "master" ]
 
 jobs:
-  build:
-
-    runs-on: ubuntu-latest
+  publish:
+    name: Publish for ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            asset_name: linux-amd64
+          - os: windows-latest
+            asset_name: windows-amd64
+          - os: macos-latest
+            asset_name: macos-amd64
 
     steps:
     - uses: actions/checkout@v3
@@ -23,7 +32,7 @@ jobs:
       uses: svenstaro/upload-release-action@v2
       with:
         file: /home/runner/work/pony-language-server/pony-language-server/client_vscode/pony-lsp-1.0.0.vsix
-        asset_name: vscode_pony-lsp-1.0.0.vsix
+        asset_name: pony-lsp-1.0.0-${{ matrix.asset_name }}.vsix
         tag: ${{ github.ref }}
         overwrite: true
         body: "VSCode extension"
