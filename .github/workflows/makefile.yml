@@ -6,6 +6,9 @@ on:
   pull_request:
     branches: [ "master" ]
 
+env:
+  GITHUB_WORKSPACE: /pony-lsp
+
 jobs:
   publish:
     name: Publish for ${{ matrix.os }}
@@ -39,7 +42,7 @@ jobs:
     - name: Upload binaries to release
       uses: svenstaro/upload-release-action@v2
       with:
-        file: ${{ steps.checkout.outputs.GITHUB_WORKSPACE }}/client_vscode/pony-lsp-1.0.0.vsix
+        file: $GITHUB_WORKSPACE/client_vscode/pony-lsp-1.0.0.vsix
         asset_name: pony-lsp-1.0.0-${{ matrix.asset_name }}.vsix
         tag: ${{ github.ref }}
         overwrite: true
