@@ -12,7 +12,6 @@ sh -c "$(curl --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/
 ponyup update ponyc release-$PONY_VERSION
 cd ponyc && git fetch origin && git checkout tags/$PONY_VERSION
 cd $GITHUB_WORKSPACE && cp -r ponyc/packages client_vscode
-cd $GITHUB_WORKSPACE && CXXFLAGS="-fPIC" ponyc
 cd $GITHUB_WORKSPACE/client_vscode
 # compile the extension
 npm i
