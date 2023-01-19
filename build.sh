@@ -1,6 +1,6 @@
 #! /bin/bash
 # prepare environment
-SHELL=/bin/bash
+export SHELL=/bin/bash
 PONY_VERSION=0.53.0
 set -e
 sh -c "$(curl --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/ponylang/ponyup/latest-release/ponyup-init.sh)"
