@@ -6,6 +6,8 @@ ponyup update ponyc release-$Env:PONY_VERSION
 Set-Location ponyc
 git fetch origin
 git checkout tags/$Env:PONY_VERSION
+Set-Location $Env:GITHUB_WORKSPACE
+ponyc
 cp -r ponyc/packages client_vscode
 Set-Location $Env:GITHUB_WORKSPACE/client_vscode
 # compile the extension
