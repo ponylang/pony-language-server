@@ -28,7 +28,9 @@ jobs:
     - name: Setup environment
       id: location
       shell: bash
-      run: echo "GITHUB_WORKSPACE=$GITHUB_WORKSPACE ; OS=${{matrix.os}}" >> $GITHUB_OUTPUT
+      run: |
+        echo "GITHUB_WORKSPACE=$GITHUB_WORKSPACE" >> $GITHUB_OUTPUT
+        echo "OS=${{matrix.os}}" >> $GITHUB_OUTPUT
 
     - name: Install libressl
       if: ${{ contains(matrix.os, 'macos') }}
