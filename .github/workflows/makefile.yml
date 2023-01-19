@@ -37,7 +37,7 @@ jobs:
         curl -s https://codecov.io/bash | bash
 
     - name: Build.sh
-      run: cd $GITHUB_WORKSPACE && bash build.sh
+      run: cd $GITHUB_WORKSPACE && build.sh
 
     - name: Upload binaries to release
       uses: svenstaro/upload-release-action@v2
