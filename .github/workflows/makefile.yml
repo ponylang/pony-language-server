@@ -16,8 +16,5 @@ jobs:
       with:
         submodules: true
 
-    - name: ponyc
-      run: cd $GITHUB_WORKSPACE && cd ponyc && make libs && make configure config=debug && make build config=debug
-
     - name: build
       run: cd $GITHUB_WORKSPACE && bash build.sh
