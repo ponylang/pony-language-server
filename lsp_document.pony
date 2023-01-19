@@ -4,23 +4,23 @@ use "files"
 use "backpressure"
 use "process"
 use "random"
+use "debug"
+use "pony-ast/ast"
 
 
 actor DocumentProtocol
   var initialized: Bool = false
   let channel: Stdio
-  let debug: Debugger
   let compiler: PonyCompiler
 
 
-  new create(compiler': PonyCompiler, channel': Stdio, debug': Debugger) =>
+  new create(compiler': PonyCompiler, channel': Stdio) =>
     channel = channel'
-    debug = debug'
     compiler = compiler'
 
 
   be handle_did_open(msg: RequestMessage val) =>
-    let errors_notifier = ErrorsNotifier(channel, debug)
+    let errors_notifier = ErrorsNotifier(channel)
     match msg.params
     | let p: JsonObject => 
       try
@@ -29,16 +29,16 @@ actor DocumentProtocol
         let text = text_document.data("text")? as String val
         let filepath = uri.clone()
         filepath.replace("file://", "")
-        debug.print("DocumentProtocol calling compiler to check " + filepath.clone())
+        Debug("DocumentProtocol calling compiler to check " + filepath.clone())
         errors_notifier.track_file(filepath.clone())
         compiler(consume filepath, errors_notifier)
       else
-        debug.print("ERROR retrieving textDocument uri: " + msg.json().string())
+        Debug("ERROR retrieving textDocument uri: " + msg.json().string())
       end
     end
 
   be handle_did_save(msg: RequestMessage val) =>
-    let errors_notifier = ErrorsNotifier(channel, debug)
+    let errors_notifier = ErrorsNotifier(channel)
     match msg.params
     | let p: JsonObject => 
       try
@@ -46,23 +46,21 @@ actor DocumentProtocol
         let uri = text_document.data("uri")? as String val
         let filepath = uri.clone()
         filepath.replace("file://", "")
-        debug.print("DocumentProtocol calling compiler to check " + filepath.clone())
+        Debug("DocumentProtocol calling compiler to check " + filepath.clone())
         errors_notifier.track_file(filepath.clone())
         compiler(consume filepath, errors_notifier)
       else
-        debug.print("ERROR retrieving textDocument uri: " + msg.json().string())
+        Debug("ERROR retrieving textDocument uri: " + msg.json().string())
       end
     end
 
 
 actor ErrorsNotifier
   let channel: Stdio
-  let debug: Debugger
   let errors: Map[String, Array[JsonObject val]] = Map[String, Array[JsonObject val]]
 
-  new create(channel': Stdio, debug': Debugger) =>
+  new create(channel': Stdio) =>
     channel = channel'
-    debug = debug'
 
   be track_file(filepath: String) =>
     let errorlist = try errors(filepath)? else Array[JsonObject val] end

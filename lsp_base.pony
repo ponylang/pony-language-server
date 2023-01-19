@@ -7,6 +7,7 @@
 
 use "immutable-json"
 use "collections"
+use "debug"
 
 
 type ReceivingMode is (ReceivingModeHeader | ReceivingModeContent)
@@ -105,12 +106,10 @@ actor BaseProtocol
   var content_buffer: String ref = String
   var headers: Map[String, String] = Map[String, String]
   var receiving_mode: ReceivingMode = ReceivingModeHeader
-  var debug: Debugger
   var notifier: Notifier tag
 
 
-  new create(debug': Debugger, notifier': Notifier tag) => 
-    debug = debug'
+  new create(notifier': Notifier tag) => 
     notifier = notifier'
 
 
@@ -142,7 +141,7 @@ actor BaseProtocol
           receive_headers("")
         end
       else
-        debug.print("ERROR abuffer.shift()")
+        Debug("ERROR abuffer.shift()")
       end
     end
 
@@ -189,8 +188,8 @@ actor BaseProtocol
             end
             res = ResponseMessage(id, result, resp_err)
           else
-            debug.print("\n<- Error request parsing message")
-            debug.print(datalog.clone())
+            Debug("\n<- Error request parsing message")
+            Debug(datalog.clone())
             line_buffer = rest.clone()
             content_buffer = String
             headers = Map[String, String]
@@ -204,10 +203,10 @@ actor BaseProtocol
         receiving_mode = ReceivingModeHeader
         res
       else
-        debug.print("\n\n-----------")
-        debug.print("Error initial parsing message")
-        debug.print(content_buffer.codepoints().string() + "/" + content_length.string())
-        debug.print(datalog)
+        Debug("\n\n-----------")
+        Debug("Error initial parsing message")
+        Debug(content_buffer.codepoints().string() + "/" + content_length.string())
+        Debug(datalog)
       end
     end
 

@@ -48,7 +48,7 @@ export async function activate(context: ExtensionContext) {
     clientOptions
   );
 
-  outputChannel.appendLine("Pony LSP ready");
+  outputChannel.appendLine("PonyLSP client ready");
   // Start the client. This will also launch the server
   return client.start().catch(reason => {
     window.showWarningMessage(`Failed to run Pony Language Server (PLS): ${reason}`);
