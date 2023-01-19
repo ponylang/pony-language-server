@@ -8,4 +8,7 @@ ponyc/build/debug/ponyc -o client_vscode -b pony-lsp
 cp -r ponyc/packages client_vscode
 cd client_vscode
 # compile the extension
+npm i
+npm i -g vsce
 npm run compile
+vsce package
