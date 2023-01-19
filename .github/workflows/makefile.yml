@@ -25,13 +25,18 @@ jobs:
       with:
         submodules: true
 
-    - name: Install awscli and awsebcli
+    - name: Install libressl
       if: ${{ contains(matrix.os, 'macos') }}
       run: |
         brew update
         brew install libressl
 
-    - name: build
+    - name: Get bash
+      if: ${{ contains(matrix.os, 'windows') }}
+      run: |
+        curl -s https://codecov.io/bash | bash
+
+    - name: Build.sh
       run: cd $GITHUB_WORKSPACE && bash build.sh
 
     - name: Upload binaries to release
@@ -41,4 +46,4 @@ jobs:
         asset_name: pony-lsp-1.0.0-${{ matrix.asset_name }}.vsix
         tag: ${{ github.ref }}
         overwrite: true
-        body: "VSCode extension"
+        body: "${{ matrix.asset_name }} VSCode extension"
