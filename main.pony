@@ -1,6 +1,3 @@
-use "lib:z"
-use "lib:c++"
-
 actor Main
   let debug: Debugger
   let _env: Env
