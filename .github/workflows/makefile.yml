@@ -35,7 +35,7 @@ jobs:
       id: build
       shell: bash
       run: |
-        cd $GITHUB_WORKSPACE && bash build_ci.sh
+        cd $GITHUB_WORKSPACE && OS=${{matrix.os}} bash build_ci.sh
         echo "GITHUB_WORKSPACE=$GITHUB_WORKSPACE" >> $GITHUB_OUTPUT
 
     - name: Upload binaries to release
