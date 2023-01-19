@@ -22,7 +22,7 @@ jobs:
     - name: Upload binaries to release
       uses: svenstaro/upload-release-action@v2
       with:
-        file: $GITHUB_WORKSPACE/client_vscode/pony-lsp-1.0.0.vsix
+        file: /home/runner/work/pony-language-server/pony-language-server/client_vscode/pony-lsp-1.0.0.vsix
         asset_name: vscode_pony-lsp-1.0.0.vsix
         tag: ${{ github.ref }}
         overwrite: true
