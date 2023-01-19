@@ -4,6 +4,7 @@
 	"license": "MIT",
 	"version": "1.0.0",
 	"categories": [],
+	"repo": "https://github.com/kidandcat/pony-language-server",
 	"engines": {
 		"vscode": "^1.74.0"
 	},
