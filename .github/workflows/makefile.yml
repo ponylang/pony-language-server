@@ -17,8 +17,8 @@ jobs:
             asset_name: linux-amd64
           - os: windows-latest
             asset_name: windows-amd64
-          - os: macos-latest
-            asset_name: macos-amd64
+          # - os: macos-latest
+          #   asset_name: macos-amd64
 
     steps:
     - uses: actions/checkout@v3
