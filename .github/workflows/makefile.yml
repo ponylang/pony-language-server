@@ -49,7 +49,7 @@ jobs:
       shell: pwsh
       run: |
         Set-Location $Env:GITHUB_WORKSPACE
-        build_ci.ps1
+        .\build_ci.ps1
 
     - name: Upload binaries to release
       uses: svenstaro/upload-release-action@v2
