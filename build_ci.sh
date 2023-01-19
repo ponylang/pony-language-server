@@ -16,7 +16,7 @@ cd ponyc && git fetch origin && git checkout tags/$PONY_VERSION
 cd $GITHUB_WORKSPACE && cp -r ponyc/packages client_vscode
 # build pony-lsp
 cd $GITHUB_WORKSPACE
-ponyc
+ponyc -b pony-lsp -o client_vscode
 # compile the extension
 cd $GITHUB_WORKSPACE/client_vscode
 npm i
