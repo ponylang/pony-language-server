@@ -1,6 +1,6 @@
 #! /bin/bash
 PONY_VERSION=0.53.0
-apt update && apt install build-essential -y
+sudo apt update && apt install build-essential -y
 # SCRIPT
 set -e
 export SHELL=/bin/bash
