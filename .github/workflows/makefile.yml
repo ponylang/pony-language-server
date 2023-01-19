@@ -6,9 +6,6 @@ on:
   pull_request:
     branches: [ "master" ]
 
-env:
-  GITHUB_WORKSPACE: /pony-lsp
-
 jobs:
   publish:
     name: Publish for ${{ matrix.os }}
