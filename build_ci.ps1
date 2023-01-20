@@ -1,4 +1,4 @@
-$Env:PONY_VERSION=0.53.0
+$ErrorActionPreference = "Stop"
 Set-Location $Env:GITHUB_WORKSPACE
 # install zlib
 powershell -Command "(Invoke-WebRequest -Uri https://git.io/JnHTY -OutFile install_zlib.bat)"; ./install_zlib.bat; del install_zlib.bat
