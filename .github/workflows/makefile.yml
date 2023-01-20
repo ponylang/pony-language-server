@@ -1,4 +1,4 @@
-name: Makefile CI
+name: PonyLSP CI
 
 env:
   PONY_VERSION: 0.53.0

@@ -8,7 +8,6 @@ export PATH=/home/runner/.local/share/ponyup/bin:$PATH
 # MacOS
 export PATH=/Users/runner/.local/share/ponyup/bin:$PATH
 sh -c "$(curl --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/ponylang/ponyup/latest-release/ponyup-init.sh)"
-# ponyup default ubuntu22.04
 ponyup update ponyc release-$PONY_VERSION
 # copy stdlib to extension
 cd ponyc && git fetch origin && git checkout tags/$PONY_VERSION
