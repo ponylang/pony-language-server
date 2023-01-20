@@ -33,6 +33,7 @@ jobs:
       shell: bash
       run: |
         echo "GITHUB_WORKSPACE=$GITHUB_WORKSPACE" >> $GITHUB_OUTPUT
+        echo "PONY_VERSION=$PONY_VERSION" >> $GITHUB_OUTPUT
         echo "OS=${{matrix.os}}" >> $GITHUB_OUTPUT
 
     - name: Install libressl
@@ -58,7 +59,7 @@ jobs:
       uses: svenstaro/upload-release-action@v2
       with:
         file: ${{ steps.location.outputs.GITHUB_WORKSPACE }}/client_vscode/pony-lsp-1.0.0.vsix
-        asset_name: pony-lsp-$PONY_VERSION-${{ matrix.asset_name }}.vsix
-        tag: $PONY_VERSION
+        asset_name: pony-lsp-${{ steps.location.outputs.PONY_VERSION }}-${{ matrix.asset_name }}.vsix
+        tag: ${{ steps.location.outputs.PONY_VERSION }}
         overwrite: true
         body: "${{ matrix.asset_name }} VSCode extension"
