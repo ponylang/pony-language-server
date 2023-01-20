@@ -1,5 +1,4 @@
 #! /bin/bash
-PONY_VERSION=0.53.0
 sudo apt update && sudo apt install gcc -y
 # SCRIPT
 set -e
