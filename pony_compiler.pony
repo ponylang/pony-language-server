@@ -26,7 +26,8 @@ actor PonyCompiler
   be apply(uri: String, notifier: CompilerNotifier tag) =>
     Log(channel, "PonyCompiler apply")
     match Compiler.compile(env, FilePath(FileAuth(env.root), Path.dir(uri)))
-    | let p: Program => try package = p.package() as Package end
+    //                                  Memory leak
+    | let p: Program => None // try package = p.package() as Package end
     | let errs: Array[Error] =>
       for err in errs.values() do
         notifier.on_error(err.file, err.line, err.pos, err.msg)

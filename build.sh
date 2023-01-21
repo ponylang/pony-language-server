@@ -3,6 +3,7 @@
 set -e
 source ~/.bashrc
 # compile pony-lsp
+# cd ponyc && make clean configure build config=debug arch=armv8 && cd ..
 ponyc/build/debug/ponyc
 # move pony-lsp binary to the extension folder
 mv pony-lsp client_vscode
