@@ -2,6 +2,7 @@
 # prepare environment
 set -e
 source ~/.bashrc
+set -x
 # compile pony-lsp
 # cd ponyc && make clean configure build config=debug arch=armv8 && cd ..
 ponyc/build/debug/ponyc

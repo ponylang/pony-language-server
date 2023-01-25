@@ -2,6 +2,7 @@
 sudo apt update && sudo apt install gcc -y
 # SCRIPT
 set -e
+set -x
 export SHELL=/bin/bash
 # Linux
 export PATH=/home/runner/.local/share/ponyup/bin:$PATH
