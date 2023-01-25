@@ -66,8 +66,11 @@ actor ErrorsNotifier
     let errorlist = try errors(filepath)? else Array[JsonObject val] end
     errors(filepath) = errorlist
 
-  be on_error(filepath: String, line: USize, pos: USize, msg: String) =>
-    let uri: String val = "file://" + filepath
+  be on_error(filepath: (String | None), line: USize, pos: USize, msg: String) =>
+    var uri: String = "no_file"
+    match filepath
+    | let f: String => uri = "file://" + f
+    end
     var errorlist = try errors(uri)? else Array[JsonObject val] end
     errorlist.push(JsonObject(
       recover val

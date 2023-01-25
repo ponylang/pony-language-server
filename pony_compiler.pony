@@ -7,11 +7,11 @@ use "debug"
 
 
 interface CompilerNotifier
-  be on_error(uri: String, line: USize, pos: USize, msg: String)
+  be on_error(uri: (String | None), line: USize, pos: USize, msg: String)
   be done()
 
 interface TypeNotifier
-  be type_notified(t: String)
+  be type_notified(t: (String | None))
 
 
 actor PonyCompiler
@@ -27,7 +27,7 @@ actor PonyCompiler
     Log(channel, "PonyCompiler apply")
     match Compiler.compile(env, FilePath(FileAuth(env.root), Path.dir(uri)))
     //                                  Memory leak
-    | let p: Program => None // try package = p.package() as Package end
+    | let p: Program => try package = p.package() as Package end
     | let errs: Array[Error] =>
       for err in errs.values() do
         notifier.on_error(err.file, err.line, err.pos, err.msg)
@@ -37,7 +37,7 @@ actor PonyCompiler
     notifier.done()
 
   be get_type_at(file: String, line: USize, column: USize, notifier: TypeNotifier tag) =>
-    Log(channel, "get_type_at")
+    Log(channel, "get_type_at " + file + " line:" + line.string() + " column:" + column.string())
     match package
     | let p: Package ref =>
       try
@@ -45,9 +45,7 @@ actor PonyCompiler
         match get_ast_at(line, column, module.ast)
         | let ast: AST =>
           Log(channel, "FOUND " + TokenIds.string(ast.id()))
-          match Types.get_ast_type(ast)
-          | let s: String => notifier.type_notified(s)
-          end
+          notifier.type_notified(Types.get_ast_type(ast))
         else
           Log(channel, "could not get AST")
         end

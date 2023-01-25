@@ -69,20 +69,25 @@ actor HoverNotifier
 
   be done() =>
     Log(channel, "HoverNotifier done")
-    compiler.get_type_at(file, line, column, this)
+    compiler.get_type_at(file, line+1, column, this)
 
-  be type_notified(t: String) => 
-    channel.send_message(ResponseMessage(id, JsonObject(
-      recover val
-        Map[String, JsonType](1)
-          .>update("contents", JsonObject(
-            recover val
-              Map[String, JsonType](2)
-                .>update("kind", "markdown")
-                .>update("value", t)
-            end
-          ))
-      end
-    )))
+  be type_notified(t: (String | None)) => 
+    match t
+    | let s: String => 
+      Log(channel, "type_notified " + s)
+      channel.send_message(ResponseMessage(id, JsonObject(
+        recover val
+          Map[String, JsonType](1)
+            .>update("contents", JsonObject(
+              recover val
+                Map[String, JsonType](2)
+                  .>update("kind", "markdown")
+                  .>update("value", s)
+              end
+            ))
+        end
+      )))
+    | None => Log(channel, "type_notified is None")
+    end
 
-  be on_error(filepath': String, line': USize, pos': USize, msg': String) => None
+  be on_error(filepath': (String | None), line': USize, pos': USize, msg': String) => None
