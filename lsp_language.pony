@@ -31,10 +31,8 @@ actor LanguageProtocol
         let character = position.data("character")? as I64
         let filepath = uri.clone()
         filepath.replace("file://", "")
-        let notifier = HoverNotifier(msg.id, compiler, channel, filepath.clone(), line.usize(), character.usize())
-        Log(channel, "compiler.apply()")
-        // TODO: whats happening here?
-        compiler(consume filepath, notifier)
+        let notifier = HoverNotifier(msg.id, compiler, channel)
+        compiler.get_type_at(filepath.clone(), line.usize()+1, character.usize(), notifier)
       else
         Log(channel, "ERROR retrieving textDocument uri: " + msg.json().string())
         channel.send_message(ResponseMessage(msg.id, None, ResponseError(-32700, "parse error")))
@@ -48,28 +46,15 @@ actor HoverNotifier
   let id: (I64 val | String val | None val)
   let compiler: PonyCompiler
   let channel: Stdio
-  let file: String
-  let line: USize
-  let column: USize
 
   new create(
       id': (I64 val | String val | None val),
       compiler': PonyCompiler, 
-      channel': Stdio,
-      file': String,
-      line': USize,
-      column': USize
+      channel': Stdio
     ) =>
     id = id'
     compiler = compiler'
     channel = channel'
-    file = file'
-    line = line'
-    column = column'
-
-  be done() =>
-    Log(channel, "HoverNotifier done")
-    compiler.get_type_at(file, line+1, column, this)
 
   be type_notified(t: (String | None)) => 
     match t
@@ -87,7 +72,18 @@ actor HoverNotifier
             ))
         end
       )))
-    | None => Log(channel, "type_notified is None")
+    | None => 
+      Log(channel, "type_notified is None")
+      channel.send_message(ResponseMessage(id, JsonObject(
+        recover val
+          Map[String, JsonType](1)
+            .>update("contents", JsonObject(
+              recover val
+                Map[String, JsonType](2)
+                  .>update("kind", "markdown")
+                  .>update("value", "❌")
+              end
+            ))
+        end
+      )))
     end
-
-  be on_error(filepath': (String | None), line': USize, pos': USize, msg': String) => None
