@@ -25,14 +25,30 @@ actor PonyCompiler
 
   be apply(uri: String, notifier: CompilerNotifier tag) =>
     Log(channel, "PonyCompiler apply")
-    match Compiler.compile(env, FilePath(FileAuth(env.root), Path.dir(uri)))
-    //                                  Memory leak
-    | let p: Program => try package = p.package() as Package end
+    // extract PONYPATH
+    var pony_path = ""
+    match PonyPath(env)
+    | let pp: String => pony_path = pp
+    else
+      Log(channel, "Couldn't retrieve PONYPATH")
+      return
+    end
+    match Compiler.compile(FilePath(FileAuth(env.root), Path.dir(uri)), pony_path)
+    | let p: Program => 
+      try 
+        Log(channel, "Program received") 
+        package = p.package() as Package 
+      else 
+        Log(channel, "Error getting package from program") 
+      end
     | let errs: Array[Error] =>
+      Log(channel, "Compile errors: " + errs.size().string())
       for err in errs.values() do
+        Log(channel, "Error: " + err.msg)
         notifier.on_error(err.file, err.line, err.pos, err.msg)
       end
     end
+    Log(channel, "Stdlib path: " + pony_path)
     Log(channel, "PonyCompiler called CompilerNotifier done()")
     notifier.done()
 
