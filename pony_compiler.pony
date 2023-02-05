@@ -32,6 +32,18 @@ actor PonyCompiler
     else
       Log(channel, "Couldn't retrieve PONYPATH")
       return
+    end 
+    if FilePath(FileAuth(env.root), Path.dir(uri) + "/_corral").exists() then
+      var paths = [pony_path]
+      let handler =
+        {ref(dir_path: FilePath val, dir_entries: Array[String val] ref)(paths): None =>
+          Log(channel, "## folder " + dir_path.path) 
+          if Path.base(dir_path.path) != "_corral" then
+            dir_entries.clear()
+            paths.push(dir_path.path)
+          end}
+      FilePath(FileAuth(env.root), Path.dir(uri) + "/_corral").walk(handler, false)
+      pony_path = ":".join(paths.values())
     end
     match Compiler.compile(FilePath(FileAuth(env.root), Path.dir(uri)), pony_path)
     | let p: Program => 
@@ -153,3 +165,5 @@ actor PonyCompiler
         return module
       end
     end
+
+

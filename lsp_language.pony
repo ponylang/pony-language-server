@@ -32,7 +32,7 @@ actor LanguageProtocol
         let filepath = uri.clone()
         filepath.replace("file://", "")
         let notifier = HoverNotifier(msg.id, compiler, channel)
-        compiler.get_type_at(filepath.clone(), line.usize()+1, character.usize(), notifier)
+        compiler.get_type_at(filepath.clone(), line.usize()+1, character.usize()+1, notifier)
       else
         Log(channel, "ERROR retrieving textDocument uri: " + msg.json().string())
         channel.send_message(ResponseMessage(msg.id, None, ResponseError(-32700, "parse error")))
