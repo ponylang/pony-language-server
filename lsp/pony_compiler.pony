@@ -1,5 +1,4 @@
-use "pony-ast/ast"
-use "lib:z" if posix // TODO: temporary
+use "ast"
 use "term"
 use "cli"
 use "files"

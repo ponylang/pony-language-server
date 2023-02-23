@@ -4,7 +4,7 @@ use "files"
 use "backpressure"
 use "process"
 use "debug"
-use "pony-ast/ast"
+use "ast"
 
 
 actor LanguageProtocol

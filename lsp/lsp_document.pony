@@ -5,7 +5,7 @@ use "backpressure"
 use "process"
 use "random"
 use "debug"
-use "pony-ast/ast"
+use "ast"
 
 
 actor DocumentProtocol
