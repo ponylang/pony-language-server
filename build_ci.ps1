@@ -9,6 +9,7 @@ Set-Location ponyc
 git fetch origin
 git checkout tags/$Env:PONY_VERSION
 Set-Location $Env:GITHUB_WORKSPACE
+corral fetch
 corral run -- ponyc --bin-name pony-lsp -o client_vscode lsp
 Copy-Item pony-lsp client_vscode
 Copy-Item -force -r ponyc/packages client_vscode

@@ -16,6 +16,7 @@ cd ponyc && git fetch --all --tags && git checkout tags/$PONY_VERSION
 cd $GITHUB_WORKSPACE && cp -r ponyc/packages client_vscode
 # build pony-lsp
 cd $GITHUB_WORKSPACE
+corral fetch
 corral run -- $(which ponyc) -b pony-lsp -o client_vscode lsp
 # compile the extension
 cd $GITHUB_WORKSPACE/client_vscode

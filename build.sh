@@ -5,6 +5,7 @@ source ~/.bashrc
 set -x
 # compile pony-lsp
 # cd ponyc && make clean configure build config=debug arch=armv8 && cd ..
+corral fetch
 corral run -- ponyc/build/release/ponyc --bin-name pony-lsp lsp
 # move pony-lsp binary to the extension folder
 mv pony-lsp client_vscode
