@@ -1,4 +1,5 @@
 use "ast"
+use "lib:z" if posix // temporary workaround until next ponyc release
 use "term"
 use "cli"
 use "files"
