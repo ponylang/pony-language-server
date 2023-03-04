@@ -1,0 +1,12 @@
+{
+  "locks": [
+    {
+      "locator": "github.com/mfelsche/pony-immutable-json.git",
+      "revision": "02a1c5ad50b367868154034d5069b13b168eb88e"
+    },
+    {
+      "locator": "github.com/mfelsche/pony-ast.git",
+      "revision": "834b289669d1465b01b4a03d06d5257d021d0da9"
+    }
+  ]
+}

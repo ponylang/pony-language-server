@@ -1,0 +1,21 @@
+{
+  "packages": [],
+  "deps": [
+    {
+      "locator": "github.com/mfelsche/pony-immutable-json.git",
+      "version": "02a1c5ad50b367868154034d5069b13b168eb88e"
+    },
+    {
+      "locator": "github.com/mfelsche/pony-ast.git",
+      "version": "834b289669d1465b01b4a03d06d5257d021d0da9"
+    }
+  ],
+  "info": {
+    "description": "The Pony Language Server",
+    "homepage": "",
+    "license": "",
+    "documentation_url": "",
+    "version": "0.1.0",
+    "name": "lsp"
+  }
+}
