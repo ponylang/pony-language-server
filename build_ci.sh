@@ -10,6 +10,8 @@ export PATH=/home/runner/.local/share/ponyup/bin:$PATH
 export PATH=/Users/runner/.local/share/ponyup/bin:$PATH
 sh -c "$(curl --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/ponylang/ponyup/latest-release/ponyup-init.sh)"
 
+ponyup update corral release
+
 function version { echo "$@" | awk -F. '{ printf("%d%03d%03d%03d\n", $1,$2,$3,$4); }'; }
 cd ponyc && git fetch --all --tags
 for PONY_VERSION in $(git tag)
