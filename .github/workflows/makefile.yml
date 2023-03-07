@@ -52,8 +52,8 @@ jobs:
         Set-Location $Env:GITHUB_WORKSPACE
         .\build_ci.ps1
 
-    - uses: actions/upload-artifact@v3
+    - name: Release
+      uses: softprops/action-gh-release@v1
       with:
-        name: Pony-LSP VSCode extension
-        path: |
+        files: |
           client_vscode/*.vsix
