@@ -34,7 +34,7 @@ do
         npm i
         npm i -g vsce
         npm run compile
-        vsce package
+        vsce package $PONY_VERSION
     else
         echo "Only versions greater than 0.54.0 are supported. Discarding $PONY_VERSION"
     fi
