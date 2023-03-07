@@ -2,7 +2,7 @@
 sudo apt update && sudo apt install gcc -y
 # SCRIPT
 set -e
-# set -x
+set -x
 export SHELL=/bin/bash
 # Linux
 export PATH=/home/runner/.local/share/ponyup/bin:$PATH
@@ -21,8 +21,7 @@ do
         git checkout tags/$PONY_VERSION
         cd $GITHUB_WORKSPACE && cp -r ponyc/packages client_vscode
         # build pony-lsp
-        cd $GITHUB_WORKSPACE
-        ponyc -b pony-lsp -o client_vscode
+        cd $GITHUB_WORKSPACE && ponyc -b pony-lsp -o client_vscode
         # compile the extension
         cd $GITHUB_WORKSPACE/client_vscode
         npm i
