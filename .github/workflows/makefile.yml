@@ -55,11 +55,8 @@ jobs:
         Set-Location $Env:GITHUB_WORKSPACE
         .\build_ci.ps1
 
-    - name: Upload binaries to release
-      uses: svenstaro/upload-release-action@v2
+    - uses: actions/upload-artifact@v3
       with:
-        file: ${{ steps.location.outputs.GITHUB_WORKSPACE }}/client_vscode/pony-lsp-1.0.0.vsix
-        asset_name: pony-lsp-${{ steps.location.outputs.PONY_VERSION }}-${{ matrix.asset_name }}.vsix
-        tag: ${{ steps.location.outputs.PONY_VERSION }}
-        overwrite: true
-        body: "${{ matrix.asset_name }} VSCode extension"
+        name: pony-lsp-${{ steps.location.outputs.PONY_VERSION }}-${{ matrix.asset_name }}.vsix
+        path: |
+          client_vscode/*.vsix
