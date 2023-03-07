@@ -29,7 +29,7 @@ jobs:
       run: |
         echo "GITHUB_WORKSPACE=$GITHUB_WORKSPACE" >> $GITHUB_OUTPUT
         echo "PONY_VERSION=$PONY_VERSION" >> $GITHUB_OUTPUT
-        echo "GITHUB_SHA=$GITHUB_SHA" >> $GITHUB_OUTPUT
+        echo "SHA=`echo $GITHUB_SHA | cut -c 1-5`" >> $GITHUB_OUTPUT
         echo "OS=${{matrix.os}}" >> $GITHUB_OUTPUT
 
     - name: Install libressl
