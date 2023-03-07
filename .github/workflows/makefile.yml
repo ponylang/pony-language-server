@@ -3,8 +3,6 @@ name: PonyLSP CI
 on:
   push:
     branches: [ "master" ]
-    tags:
-      - "v*.*.*"
   pull_request:
     branches: [ "master" ]
 
@@ -54,6 +52,7 @@ jobs:
 
     - name: Release
       uses: softprops/action-gh-release@v1
+      if: startsWith(github.ref, 'refs/tags/')
       with:
         files: |
           client_vscode/*.vsix
