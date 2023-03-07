@@ -3,6 +3,8 @@ name: PonyLSP CI
 on:
   push:
     branches: [ "master" ]
+    tags:
+      - "v*.*.*"
   pull_request:
     branches: [ "master" ]
 
@@ -22,8 +24,6 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
-      with:
-        submodules: true
 
     - name: Setup environment
       id: location
