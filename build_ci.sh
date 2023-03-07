@@ -13,7 +13,7 @@ sh -c "$(curl --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/
 ponyup update corral release
 
 function version { echo "$@" | awk -F. '{ printf("%d%03d%03d%03d\n", $1,$2,$3,$4); }'; }
-cd ponyc && git fetch --all --tags
+cd ponyc-repo && git fetch --all --tags
 for PONY_VERSION in $(git tag)
 do
     if [ $(version $PONY_VERSION) -ge $(version "0.54.0") ]; then
@@ -21,7 +21,7 @@ do
         ponyup update ponyc release-$PONY_VERSION
         # copy stdlib to extension
         git checkout tags/$PONY_VERSION
-        cd $GITHUB_WORKSPACE && cp -r ponyc/packages client_vscode
+        cd $GITHUB_WORKSPACE && cp -r ponyc-repo/packages client_vscode
         # build pony-lsp
         cd $GITHUB_WORKSPACE
         corral fetch
