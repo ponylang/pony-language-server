@@ -25,7 +25,7 @@ do
         # build pony-lsp
         cd $GITHUB_WORKSPACE
         corral fetch
-        corral run -- ponyc/build/release/ponyc --bin-name pony-lsp lsp
+        corral run -- ponyc --bin-name pony-lsp lsp
         # compile the extension
         cd $GITHUB_WORKSPACE/client_vscode
         npm i
