@@ -13,7 +13,10 @@ sh -c "$(curl --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/
 ponyup update corral release
 
 function version { echo "$@" | awk -F. '{ printf("%d%03d%03d%03d\n", $1,$2,$3,$4); }'; }
+
+git clone https://github.com/ponylang/ponyc.git ponyc-repo
 cd ponyc-repo && git fetch --all --tags
+
 for PONY_VERSION in $(git tag)
 do
     if [ $(version $PONY_VERSION) -ge $(version "0.54.0") ]; then
