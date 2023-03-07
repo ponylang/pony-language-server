@@ -1,3 +1,7 @@
 [submodule "ponyc"]
 	path = ponyc
 	url = https://github.com/ponylang/ponyc.git
+
+[submodule "pony-ast"]
+	path = pony-ast
+	url = https://github.com/mfelsche/pony-ast.git
