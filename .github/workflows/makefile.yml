@@ -1,8 +1,5 @@
 name: PonyLSP CI
 
-env:
-  PONY_VERSION: 0.53.0
-
 on:
   push:
     branches: [ "master" ]
@@ -57,6 +54,6 @@ jobs:
 
     - uses: actions/upload-artifact@v3
       with:
-        name: pony-lsp-${{ steps.location.outputs.PONY_VERSION }}-${{ matrix.asset_name }}.vsix
+        name: Pony-LSP VSCode extension
         path: |
           client_vscode/*.vsix
