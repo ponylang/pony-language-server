@@ -2,6 +2,8 @@
 // https://github.com/zigtools/zls-vscode/blob/master/src/extension.ts
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.showPony = exports.ponyVerEntry = exports.deactivate = exports.activate = void 0;
+// git tags by date
+// git tag --sort=-creatordate
 const vscode_1 = require("vscode");
 const node_1 = require("vscode-languageclient/node");
 let client;
