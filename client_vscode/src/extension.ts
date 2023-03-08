@@ -1,5 +1,8 @@
 // https://github.com/zigtools/zls-vscode/blob/master/src/extension.ts
 
+// git tags by date
+// git tag --sort=-creatordate
+
 import { ExtensionContext, window, StatusBarAlignment, StatusBarItem, workspace, OutputChannel } from 'vscode';
 
 import {
