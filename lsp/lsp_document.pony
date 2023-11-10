@@ -29,11 +29,11 @@ actor DocumentProtocol
         let text = text_document.data("text")? as String val
         let filepath = uri.clone()
         filepath.replace("file://", "")
-        Debug("DocumentProtocol calling compiler to check " + filepath.clone())
+        Debug.err("DocumentProtocol calling compiler to check " + filepath.clone())
         errors_notifier.track_file(filepath.clone())
         compiler(consume filepath, errors_notifier)
       else
-        Debug("ERROR retrieving textDocument uri: " + msg.json().string())
+        Debug.err("ERROR retrieving textDocument uri: " + msg.json().string())
       end
     end
 
@@ -46,11 +46,11 @@ actor DocumentProtocol
         let uri = text_document.data("uri")? as String val
         let filepath = uri.clone()
         filepath.replace("file://", "")
-        Debug("DocumentProtocol calling compiler to check " + filepath.clone())
+        Debug.err("DocumentProtocol calling compiler to check " + filepath.clone())
         errors_notifier.track_file(filepath.clone())
         compiler(consume filepath, errors_notifier)
       else
-        Debug("ERROR retrieving textDocument uri: " + msg.json().string())
+        Debug.err("ERROR retrieving textDocument uri: " + msg.json().string())
       end
     end
 
@@ -102,7 +102,7 @@ actor ErrorsNotifier
 
   be done() =>
     for i in errors.keys() do
-      let errorlist: Array[(F64 val | I64 val | Bool val | None val | String val | JsonArray val | JsonObject val)] iso = []
+      let errorlist: Array[JsonType val] iso = []
       try
         for e in errors(i)?.values() do
           errorlist.push(e)

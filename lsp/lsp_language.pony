@@ -19,16 +19,18 @@ actor LanguageProtocol
     channel = channel'
     document = document'
 
+  be handle_goto_definition(msg: RequestMessage val) =>
+    // TODO
+    Log(channel, "GOTO Definition")
+    None
 
   be handle_hover(msg: RequestMessage val) =>
     match msg.params
     | let p: JsonObject => 
       try
-        let text_document = p.data("textDocument")? as JsonObject
-        let uri = text_document.data("uri")? as String
-        let position = p.data("position")? as JsonObject
-        let line = position.data("line")? as I64
-        let character = position.data("character")? as I64
+        let uri = JsonPath("$.textDocument.uri", p)?(0)? as String
+        let line = JsonPath("$.position.line", p)?(0)? as I64
+        let character = JsonPath("$.position.character", p)?(0)? as I64
         let filepath = uri.clone()
         filepath.replace("file://", "")
         let notifier = HoverNotifier(msg.id, compiler, channel)

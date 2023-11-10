@@ -16,27 +16,35 @@ class InputNotifier is InputNotify
 
 
 actor Stdio
-  var env: Env
   var out: OutStream
-  var protocol_base: BaseProtocol
-  var manager: Main
+  var err: OutStream
+  var handler: MessageHandler
 
-  new create(env': Env, manager': Main) =>
-    env = env'
-    out = env.out
-    protocol_base = BaseProtocol(this)
-    manager = manager'
-    let notifier = InputNotifier(this)
-    env.input(consume notifier)
+  new create(out': OutStream, err': OutStream, input: InputStream, handler': MessageHandler) =>
+    out = out'
+    err: err'
+    handler = handler'
+    let notifier = InputNotifier(BaseProtocol(this))
+    input(consume notifier)
 
   be handle_data(data: String) =>
     protocol_base(data)
 
   be handle_message(msg: Message val) =>
-    manager.handle_message(msg)
+    handler.handle_message(msg)
 
   be send_message(msg: Message val) =>
-    let output = protocol_base.compose_message(msg)
+    let output: String val = msg.string()
     out.write(output)
     out.flush()
-    Debug("\n\n->\n" + output)
+    _debug("\n\n->\n" + output)
+
+  be debug(data: String val) =>
+    """
+    Log data to STDERR
+    """
+    _log(data)
+
+  fun _debug(data: String val) =>
+    err.write(data)
+    err.flush()

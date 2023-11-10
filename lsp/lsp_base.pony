@@ -15,92 +15,6 @@ primitive ReceivingModeHeader
 primitive ReceivingModeContent
 
 
-class Header
-  var key: String
-  var value: String
-  new create(key': String, value': String) =>
-    key = key'
-    value = value'
-
-
-trait Message
-  fun json(): JsonObject
-
-
-interface Notifier
-  be handle_message(msg: Message val)
-
-
-class RequestMessage is Message
-  let id: (I64 | String | None)
-  let method: String
-  let params: (None | JsonObject val)
-  new val create(id': (I64 | String | None), method': String, params': (None | JsonObject val)) =>
-    id = id'
-    method = method'
-    params = params'
-  fun json(): JsonObject =>
-    JsonObject(
-      recover val
-        let m = Map[String, JsonType](3)
-          .>update("jsonrpc", "2.0")
-        match id
-        | let i: I64 => m.update("id", id)
-        | let i: String => m.update("id", id)
-        end
-        m.>update("method", method)
-        .>update("params", params)
-      end
-    )
-
-
-class ResponseMessage is Message
-  let id: (I64 | String | None)
-  let result: (String | I64 | Bool | JsonObject | None)
-  let response_error: (None | ResponseError val)
-  new val create(id': (I64 | String | None), result': (String | I64 | Bool | JsonObject | None), response_error': (None | ResponseError val) = None) =>
-    id = id'
-    result = result'
-    response_error = response_error'
-  fun json(): JsonObject =>
-    JsonObject(
-      recover val
-        let m = Map[String, JsonType](2)
-          .>update("jsonrpc", "2.0")
-          .>update("id", id)
-        match result
-        | let r: String val => m.update("result", r)
-        | let r: I64 val => m.update("result", r)
-        | let r: Bool val => m.update("result", r)
-        | let r: JsonObject val => m.update("result", r)
-        end
-        match response_error
-        | let r: ResponseError val => m.update("response_error", r.json())
-        end
-        m
-      end
-    )
-
-
-class ResponseError
-  let code: I64
-  let message: String
-  let data: (String | I64 | Bool | JsonArray | JsonObject | None)
-  new val create(code': I64, message': String, data': (String | I64 | Bool | JsonArray | JsonObject | None) = None) =>
-    code = code'
-    message = message'
-    data = data'
-  fun json(): JsonObject =>
-    JsonObject(
-      recover val
-        Map[String, JsonType](3)
-          .>update("code", code)
-          .>update("message", message)
-          .>update("data", data)
-      end
-    )
-
-
 actor BaseProtocol
   var line_buffer: String ref = String
   var content_buffer: String ref = String
@@ -108,10 +22,8 @@ actor BaseProtocol
   var receiving_mode: ReceivingMode = ReceivingModeHeader
   var notifier: Notifier tag
 
-
   new create(notifier': Notifier tag) => 
     notifier = notifier'
-
 
   be apply(data: String) =>
     let res = 
@@ -141,7 +53,7 @@ actor BaseProtocol
           receive_headers("")
         end
       else
-        Debug("ERROR abuffer.shift()")
+        Debug.err("ERROR abuffer.shift()")
       end
     end
 
@@ -170,7 +82,14 @@ actor BaseProtocol
         var res: Message val
         try 
           var method = json.data("method")? as String
-          var params = json.data("params")? as JsonObject
+          var params = 
+            match json.data("params")?
+            | let obj: JsonObject => obj
+            | let arr: JsonArray => arr
+            else
+              Debug.err("\n<- Invalid or missing Request params")
+              error
+            end
           res = RequestMessage(id, method, params)
         else
           try 
@@ -188,8 +107,8 @@ actor BaseProtocol
             end
             res = ResponseMessage(id, result, resp_err)
           else
-            Debug("\n<- Error request parsing message")
-            Debug(datalog.clone())
+            Debug.err("\n<- Error request parsing message")
+            Debug.err(datalog.clone())
             line_buffer = rest.clone()
             content_buffer = String
             headers = Map[String, String]
@@ -203,16 +122,9 @@ actor BaseProtocol
         receiving_mode = ReceivingModeHeader
         res
       else
-        Debug("\n\n-----------")
-        Debug("Error initial parsing message")
-        Debug(content_buffer.codepoints().string() + "/" + content_length.string())
-        Debug(datalog)
+        Debug.err("\n\n-----------")
+        Debug.err("Error initial parsing message")
+        Debug.err(content_buffer.codepoints().string() + "/" + content_length.string())
+        Debug.err(datalog)
       end
     end
-
-
-    fun tag compose_message(msg: Message val): String =>
-      let content = msg.json().string()
-      "Content-Length: " + content.size().string() + "\r\n"
-      + "\r\n"
-      + content

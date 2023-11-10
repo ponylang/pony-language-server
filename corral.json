@@ -3,11 +3,11 @@
   "deps": [
     {
       "locator": "github.com/mfelsche/pony-immutable-json.git",
-      "version": "02a1c5ad50b367868154034d5069b13b168eb88e"
+      "version": "0.1.0"
     },
     {
       "locator": "github.com/mfelsche/pony-ast.git",
-      "version": "834b289669d1465b01b4a03d06d5257d021d0da9"
+      "version": "871e8b6b6530a4dc5afa91e457c866356f594f99"
     }
   ],
   "info": {
@@ -15,7 +15,7 @@
     "homepage": "",
     "license": "",
     "documentation_url": "",
-    "version": "0.1.0",
+    "version": "0.2.0",
     "name": "lsp"
   }
 }

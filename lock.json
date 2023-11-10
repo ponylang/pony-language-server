@@ -1,12 +1,20 @@
 {
   "locks": [
     {
+      "locator": "github.com/ponylang/peg.git",
+      "revision": "0.1.5"
+    },
+    {
       "locator": "github.com/mfelsche/pony-immutable-json.git",
-      "revision": "02a1c5ad50b367868154034d5069b13b168eb88e"
+      "revision": "0.1.0"
     },
     {
       "locator": "github.com/mfelsche/pony-ast.git",
-      "revision": "834b289669d1465b01b4a03d06d5257d021d0da9"
+      "revision": "871e8b6b6530a4dc5afa91e457c866356f594f99"
+    },
+    {
+      "locator": "github.com/mfelsche/pony-binarysearch.git",
+      "revision": "v0.1.1"
     }
   ]
 }
