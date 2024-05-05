@@ -49,6 +49,14 @@ actor WorkspaceManager
   be done_compiling(package: FilePath, result: (Program val | Array[Error val] val)) =>
     this._channel.log("done compiling " + package.path)
     let package_state = this._ensure_package(package)
+    // group errors by file
+    let errors_by_file = Map[String, Array[JsonType] iso].create(4)
+    // pre-fill with opened files
+    // if we have no errors for them, they will get their errors cleared
+    for doc in package_state.documents.keys() do
+      errors_by_file(doc) = []
+    end
+
     // notify client about errors if any
     match result
     | let program: Program val =>
@@ -58,15 +66,9 @@ actor WorkspaceManager
     | let errors: Array[Error val] val =>
 
       this._channel.log("Compilation failed with " + errors.size().string() + " errors")
-      // group errors by file
-      let errors_by_file = Map[String, Array[JsonType] iso].create(4)
-      // pre-fill with opened files
-      // if we have no errors for them, they will get their errors cleared
-      for doc in package_state.documents.keys() do
-        errors_by_file(doc) = []
-      end
+      
       for err in errors.values() do
-        this._channel.log("ERROR: " + err.msg)
+        this._channel.log("ERROR: " + err.msg + " in file " + err.file.string())
         let line = err.position.line()
         let column = err.position.column()
         let diagnostic =
@@ -91,16 +93,17 @@ actor WorkspaceManager
           }
         )
       end
-      // create error diagnostics message for each file
-      for file in errors_by_file.keys() do
-        try
-          let file_errors = recover val errors_by_file.remove(file)?._2 end
-          let msg = Notification.create(
-            "textDocument/publishDiagnostics",
-            Obj("uri", Uris.from_path(file))("diagnostics", JsonArray(file_errors)).build()
-          )
-          this._channel.send(msg)
-        end
+      
+    end
+    // create (or clear) error diagnostics message for each open file
+    for file in errors_by_file.keys() do
+      try
+        let file_errors = recover val errors_by_file.remove(file)?._2 end
+        let msg = Notification.create(
+          "textDocument/publishDiagnostics",
+          Obj("uri", Uris.from_path(file))("diagnostics", JsonArray(file_errors)).build()
+        )
+        this._channel.send(msg)
       end
     end
 

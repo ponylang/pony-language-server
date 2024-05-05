@@ -45,7 +45,7 @@ class WorkspaceScanner
     for locator in locators.values() do
       try
         let locator_flat_name = Locator(locator as String).flat_name()
-        let locator_dir = (dir .> join("_corral")? .> join(locator_flat_name)?)
+        let locator_dir = dir.join("_corral")?.join(locator_flat_name)?
 
         let already_in = visited.contains(locator_dir.path)
         if not already_in then
