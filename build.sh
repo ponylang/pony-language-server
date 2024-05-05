@@ -1,8 +1,7 @@
 #! /bin/bash
 # prepare environment
-set -e
-source ~/.bashrc
-set -x
+set -ex
+
 # compile pony-lsp
 # cd ponyc && make clean configure build config=debug arch=armv8 && cd ..
 corral fetch
@@ -13,3 +12,4 @@ mv pony-lsp client_vscode
 cd client_vscode
 # compile the extension
 npm run compile
+

@@ -69,7 +69,7 @@ export function deactivate(): Thenable<void> | undefined {
 
 export var ponyVerEntry: StatusBarItem;
 
-export function showPony(good) {
+export function showPony(good: boolean) {
   ponyVerEntry = window.createStatusBarItem(StatusBarAlignment.Left);
   if (good) ponyVerEntry.text = `Pony LSP ✓`;
   else ponyVerEntry.text = `Pony LSP ✗`;

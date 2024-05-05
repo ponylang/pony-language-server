@@ -1,5 +1,5 @@
 _corral
 _repos
-node_modules
-.vsix
-pony-lsp
+*.vsix
+/pony-lsp
+/test

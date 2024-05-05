@@ -3,11 +3,11 @@
   "deps": [
     {
       "locator": "github.com/mfelsche/pony-immutable-json.git",
-      "version": "0.1.0"
+      "version": "0.3.1"
     },
     {
       "locator": "github.com/mfelsche/pony-ast.git",
-      "version": "871e8b6b6530a4dc5afa91e457c866356f594f99"
+      "version": "63537bc4e9f3bc33cded9f665b9c6684d9140063"
     }
   ],
   "info": {

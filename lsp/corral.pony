@@ -1,4 +1,5 @@
 use "files"
+use "collections"
 
 class val Locator is (Hashable & Stringable)
   """

@@ -3,17 +3,28 @@ use "lib:z" if posix // temporary workaround until next ponyc release
 use "term"
 use "cli"
 use "files"
-use "debug"
+
+actor PonyCompiler
+  let _pony_path: Array[String val] val
+
+  new create(pony_path': String) =>
+    _pony_path = [pony_path']
+
+  be compile(package: FilePath, paths: Array[String val] val, notify: CompilerNotify tag) =>
+    let package_paths: Array[String val] ref = this._pony_path.clone()
+    package_paths.append(paths)
+    let result = Compiler.compile(package, package_paths)
+    notify.done_compiling(package, result)
 
 
-interface CompilerNotifier
-  be on_error(uri: (String | None), line: USize, pos: USize, msg: String)
-  be done()
+interface CompilerNotify
+  """
+  Notify which is called by the compiler when it is done.
+  """
+  be done_compiling(package: FilePath, result: (Program val | Array[Error val] val))
 
-interface TypeNotifier
-  be type_notified(t: (String | None))
 
-
+/*
 class CompilerState
   """
   State that is needed to fulfill
@@ -78,7 +89,7 @@ actor PonyCompiler
       else
         Log(channel, "Error getting package from program")
       end
-    | let errs: Array[Error] =>
+    | let errs: Array[Error] val =>
       Log(channel, "Compile errors: " + errs.size().string())
       for err in errs.values() do
         Log(channel, "Error: " + err.msg)
@@ -92,3 +103,4 @@ actor PonyCompiler
   be get_type_at(file_path: String, line: USize, position: USize, notifier: TypeNotifier tag) =>
     // TODO: fix
     notifier.type_notified(None)
+*/

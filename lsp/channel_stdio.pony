@@ -1,50 +1,56 @@
-use "debug"
+use "immutable-json"
 
 
 class InputNotifier is InputNotify
-  let parent: Stdio
+  let handler: BaseProtocol
 
-  new iso create(parent': Stdio) =>
-    parent = parent'
+  new iso create(notifier: Notifier tag) =>
+    handler = BaseProtocol(notifier)
 
   fun ref apply(data': Array[U8 val] iso): None val =>
-    var data = String.from_array(consume data')
-    parent.handle_data(data)
+    handler(consume data')
 
   fun ref dispose(): None val =>
     None
 
+trait tag Channel
+  be send(msg: Message val)
+  be log(data: String val, message_type: MessageType = Debug)
+  be set_notifier(notifier: Notifier tag)
+  be dispose()
 
-actor Stdio
-  var out: OutStream
-  var err: OutStream
-  var handler: MessageHandler
+actor Stdio is Channel
+  let out: OutStream
+  let stdin: InputStream
 
-  new create(out': OutStream, err': OutStream, input: InputStream, handler': MessageHandler) =>
+  new create(
+    out': OutStream tag,
+    stdin': InputStream tag) =>
     out = out'
-    err: err'
-    handler = handler'
-    let notifier = InputNotifier(BaseProtocol(this))
-    input(consume notifier)
+    stdin = stdin'
 
-  be handle_data(data: String) =>
-    protocol_base(data)
+  be set_notifier(notifier: Notifier tag) =>
+    // clear out any old handler
+    this.stdin.dispose()
 
-  be handle_message(msg: Message val) =>
-    handler.handle_message(msg)
+    // start receiving input
+    // we do expect some bigger json messages, so allocate 256 bytes by default
+    this.stdin.apply(InputNotifier(notifier) where chunk_size = 256)
 
-  be send_message(msg: Message val) =>
+  be send(msg: Message val) =>
     let output: String val = msg.string()
     out.write(output)
     out.flush()
-    _debug("\n\n->\n" + output)
 
-  be debug(data: String val) =>
+  be log(data: String val, message_type: MessageType = Debug) =>
     """
-    Log data to STDERR
+    Log data to the editor via window/logMessage
     """
-    _log(data)
-
-  fun _debug(data: String val) =>
-    err.write(data)
-    err.flush()
+    send(
+      Notification(
+        "window/logMessage",
+        Obj("type", message_type.apply())("message", data).build()
+      )
+    )
+  be dispose() =>
+    this.stdin.dispose()

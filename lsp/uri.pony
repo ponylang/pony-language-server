@@ -13,3 +13,14 @@ primitive Uris
       // shouldn't happen, given that split_by never returns an empty array
       uri
     end
+
+  fun from_path(path: String): String =>
+    """
+    Convert a local path to an LSP uri
+    """
+    if path.contains("://") then
+      path
+    else
+      // TODO: lets do something more sophisticated here
+      "file://" + path
+    end

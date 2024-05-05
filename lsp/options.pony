@@ -15,3 +15,5 @@ class val ServerOptions
         end
       end
     
+  new val default() =>
+    pony_path = None
