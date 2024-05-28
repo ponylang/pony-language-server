@@ -10,6 +10,7 @@ actor WorkspaceManager
   Handling all operations on a workspace
   """
   let workspace: WorkspaceData
+  let _file_auth: FileAuth
   let _channel: Channel
   let _compiler: PonyCompiler
   let _packages: Map[String, PackageState]
@@ -18,10 +19,12 @@ actor WorkspaceManager
 
   new create(
     workspace': WorkspaceData,
+    file_auth': FileAuth,
     channel': Channel,
     compiler': PonyCompiler)
   =>
     workspace = workspace'
+    _file_auth = file_auth'
     _channel = channel'
     _compiler = compiler'
     _packages = _packages.create()
@@ -46,38 +49,34 @@ actor WorkspaceManager
     | None => this.workspace.folder
     end
 
-  be done_compiling(package: FilePath, result: (Program val | Array[Error val] val)) =>
-    this._channel.log("done compiling " + package.path)
-    let package_state = this._ensure_package(package)
+  be done_compiling(program_dir: FilePath, result: (Program val | Array[Error val] val), run: USize) =>
+    this._channel.log("done compiling " + program_dir.path)
     // group errors by file
     let errors_by_file = Map[String, Array[JsonType] iso].create(4)
     // pre-fill with opened files
     // if we have no errors for them, they will get their errors cleared
-    for doc in package_state.documents.keys() do
-      errors_by_file(doc) = []
+    for pkg in this._packages.values() do
+      for doc in pkg.documents.keys() do
+        errors_by_file(doc) = []
+      end
     end
 
-    // notify client about errors if any
     match result
     | let program: Program val =>
-      this._channel.log("Successfully compiled " + package.path)
-      // clearing out all diagnostics for every open file
-      package_state.update(program)
+      this._channel.log("Successfully compiled " + program_dir.path)
+      // create/update package states for every package being part of the program
+      for package in program.packages() do
+        let package_path = FilePath(this._file_auth, package.path)
+        let package_state = this._ensure_package(package_path)
+        package_state.update(package, run)
+      end
     | let errors: Array[Error val] val =>
 
       this._channel.log("Compilation failed with " + errors.size().string() + " errors")
       
       for err in errors.values() do
         this._channel.log("ERROR: " + err.msg + " in file " + err.file.string())
-        let line = err.position.line()
-        let column = err.position.column()
-        let diagnostic =
-          Obj("message", err.msg)(
-            "range", Obj(
-              "start", Obj("line", line.i64() - 1)("character", column.i64()))(
-              "end", Obj("line", line.i64() - 1)("character", column.i64())
-            )
-          ).build()
+        let diagnostic = Diagnostic.from_error(err)
         errors_by_file.upsert(
           try
             err.file as String
@@ -85,7 +84,7 @@ actor WorkspaceManager
             "no_file"
           end,
           recover iso
-            [as JsonType: diagnostic]
+            [as JsonType: diagnostic.to_json()]
           end,
           {(current: Array[JsonType] iso, provided: Array[JsonType] iso) =>
             current.append(consume provided)
@@ -95,6 +94,7 @@ actor WorkspaceManager
       end
       
     end
+    // notify client about errors if any
     // create (or clear) error diagnostics message for each open file
     for file in errors_by_file.keys() do
       try
@@ -109,6 +109,9 @@ actor WorkspaceManager
 
 
   be did_open(document_uri: String, notification: Notification val) =>
+    """
+    Handling the textDocument/didOpen notification
+    """
     let document_path = Uris.to_path(document_uri)
     this._channel.log("handling did_open of " + document_path)
     let package: FilePath = this._find_workspace_package(document_path)
@@ -125,6 +128,9 @@ actor WorkspaceManager
     end
 
   be did_close(document_uri: String, notification: Notification val) =>
+    """
+    Handling the textDocument/didClose notification
+    """
     let document_path = Uris.to_path(document_uri)
     this._channel.log("handling did_close of " + document_path)
     let package: FilePath = this._find_workspace_package(document_path)
@@ -135,6 +141,9 @@ actor WorkspaceManager
     end
 
   be did_save(document_uri: String, notification: Notification val) =>
+    """
+    Handling the textDocument/didSave notification
+    """
     let document_path = Uris.to_path(document_uri)
     this._channel.log("handling did_save of " + document_path)
     // TODO: don't compile multiple times for multiple documents being saved one
@@ -158,11 +167,16 @@ actor WorkspaceManager
     _compiler.compile(package, workspace.dependency_paths, this)
 
   be hover(document_uri: String, request: RequestMessage val) =>
-    this._channel.log("handling hover")
+    """
+    Handling the textDocument/hover request
+    """
     this._current_request = request
     _channel.send(ResponseMessage.create(request.id, None))
 
   be goto_definition(document_uri: String, request: RequestMessage val) =>
+    """
+    Handling the textDocument/definition request
+    """
     this._channel.log("handling goto_definition")
     this._current_request = request
     // extract the source code position
@@ -193,26 +207,22 @@ actor WorkspaceManager
           | let index: PositionIndex =>
             match index.find_node_at(USize.from[I64](line + 1), USize.from[I64](column + 1)) // pony lines and characters are 1-based, lsp are 0-based
             | let ast: AST box =>
-              //this._channel.log(ast.debug())
+              this._channel.log(ast.debug())
               var json_builder = Arr.create()
               // iterate through all found definitions
               for ast_definition in ast.definitions().values() do
                 // get position of the found definition
-                let start_pos: Position = ast_definition.position()
-                let end_pos: Position =
-                  match ast_definition.end_pos()
-                  | let p: Position => p
-                  | None => start_pos // *shrug*
-                  end
+                (let start_pos, let end_pos) = ast_definition.span()
                 try
                   // append new location
                   json_builder = json_builder(
-                    Obj("uri", Uris.from_path(ast_definition.source_file() as String val))(
-                      "range", Obj(
-                        "start", Obj("line", I64.from[USize](start_pos.line() - 1))("character", I64.from[USize](start_pos.column() - 1)))(
-                        "end",   Obj("line", I64.from[USize](end_pos.line()   - 1))("character", I64.from[USize](end_pos.column()   - 1))
+                    LspLocation(
+                      Uris.from_path(ast_definition.source_file() as String val),
+                      LspPositionRange(
+                        LspPosition.from_ast_pos(start_pos),
+                        LspPosition.from_ast_pos(end_pos)
                       )
-                    )
+                    ).to_json()
                   )
                 else
                   this._channel.log("No source file found for definition: " + ast_definition.debug())
@@ -235,6 +245,30 @@ actor WorkspaceManager
     // send a null-response in every failure case
     this._channel.send(ResponseMessage.create(request.id, None))
 
+  be document_symbols(document_uri: String, request: RequestMessage val) =>
+    this._channel.log("Handling textDocument/documentSymbol")
+    let document_path = Uris.to_path(document_uri)
+    let package: FilePath = this._find_workspace_package(document_path)
+    match this._get_package(package)
+    | let pkg_state: PackageState =>
+        //this._channel.log(pkg_state.debug())
+        match pkg_state.get_document(document_path)
+        | let doc: DocumentState =>
+          let symbols = doc.document_symbols()
+          var json_builder = Arr
+          for symbol in symbols.values() do
+            json_builder = json_builder(symbol.to_json())
+          end
+          this._channel.send((ResponseMessage(request.id, json_builder.build())))
+          return
+        | None =>
+          this._channel.log("No document state available for " + document_path)
+        end
+    | None =>
+      this._channel.log("No package state available for package: " + package.path)
+    end
+    // send a null-response in every failure case
+    this._channel.send(ResponseMessage.create(request.id, None))
 
   be dispose() =>
     for package_state in this._packages.values() do

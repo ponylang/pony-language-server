@@ -9,7 +9,9 @@ class val WorkspaceData
   """
   let name: String
   let folder: FilePath
-  // absolute paths
+  // dependency names, relative to <folder>/_corral/
+  let dependencies: Array[String] val
+  // absolute paths (derived from folder and dependencies)
   let dependency_paths: Array[String] val
   // absolute paths
   let package_paths: Set[String] val
@@ -20,15 +22,21 @@ class val WorkspaceData
   new val create(
     name': String,
     folder': FilePath,
-    dependency_paths': Set[String] val,
+    dependencies': Set[String] val,
     package_paths': Set[String] val)
   =>
     name = name'
     folder = folder'
-    dependency_paths =
+    dependencies =
       recover val
-        Iter[String](dependency_paths'.values())
-          .collect(Array[String].create(dependency_paths'.size()))
+        Iter[String](dependencies'.values())
+          .collect(Array[String].create(dependencies'.size()))
+      end
+    dependency_paths = 
+      recover val
+        Iter[String](dependencies.values())
+          .map[String]({(dep): String? => folder.join("_corral")?.join(dep)?.path})
+          .collect(Array[String].create(dependencies.size()))
       end
     package_paths = package_paths'
     var min: USize = USize.max_value()
@@ -39,7 +47,7 @@ class val WorkspaceData
 
   fun debug(): String =>
     var dp_arr = Arr.create()
-    for dp in dependency_paths.values() do
+    for dp in dependencies.values() do
       dp_arr = dp_arr(dp)
     end
     var pp_arr = Arr.create()
@@ -49,7 +57,7 @@ class val WorkspaceData
     Obj("name", name)(
       "folder", folder.path
     )(
-      "dependency_paths", dp_arr
+      "dependencies", dp_arr
     )(
       "packages", pp_arr
     ).build().string()

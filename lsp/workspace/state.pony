@@ -1,7 +1,8 @@
 use "collections"
 use "files"
-use "ast"
 use "itertools"
+
+use "ast"
 
 use ".."
 
@@ -10,18 +11,20 @@ class PackageState
   let documents: Map[String, DocumentState]
   let _channel: Channel
 
-  var program: (Program | None)
+  var package: (Package | None)
+  var compiler_run_id: USize
 
   new create(path': FilePath, channel: Channel) =>
     path = path'
     _channel = channel
     documents = documents.create()
-    program = None
+    package = None
+    compiler_run_id = 0
 
   fun debug(): String val =>
     "Package " + this.path.path + " (" + (
       try
-        ((this.program as Program).package() as Package).qualified_name
+        (this.package as Package).qualified_name
       else
         ""
       end
@@ -44,13 +47,12 @@ class PackageState
 
   fun ref insert_new(document_path: String): (DocumentState, Bool) =>
     var has_module = false
-    let doc_state = DocumentState.create(document_path)
+    let doc_state = DocumentState.create(document_path, this._channel)
 
-    // TODO: maybe look through all packages
     try
-      let package = (this.program as Program).package() as Package
-      let module = package.find_module(document_path) as Module
-      doc_state.update(module)
+      let pkg = this.package as Package
+      let module = pkg.find_module(document_path) as Module
+      doc_state.update(module, this.compiler_run_id)
       has_module = true
     end
     (
@@ -61,26 +63,20 @@ class PackageState
       has_module
     )
 
-  // TODO: should we also update the package state with errors?
-  fun ref update(result: Program val) =>
-    this.program = result
-    match result.package()
-    | let package: Package =>
-      this._channel.log("Updating package " + package.path)
-      this._channel.log(this.debug())
-      // TODO: also support doc_states for other packages (like builtin etc.)
-      for (doc_path, doc_state) in this.documents.pairs() do
-        // TODO: ensure both module and package-state paths are normalized
-        match package.find_module(doc_path)
-        | let m: Module val =>
-          // update each document state
-          doc_state.update(m)
-        | None =>
-          this._channel.log("No module found for " + doc_path)
-        end
+  fun ref update(result: Package val, run_id: USize) =>
+    this.compiler_run_id = run_id
+    this.package = result
+    this._channel.log("Updating package " + result.path)
+    this._channel.log(this.debug())
+    for (doc_path, doc_state) in this.documents.pairs() do
+      // TODO: ensure both module and package-state paths are normalized
+      match result.find_module(doc_path)
+      | let m: Module val =>
+        // update each document state
+        doc_state.update(m, run_id)
+      | None =>
+        this._channel.log("No module found for " + doc_path)
       end
-    else
-      this._channel.log("No package in program :(")
     end
 
   fun dispose() =>
@@ -90,21 +86,49 @@ class PackageState
 
 class DocumentState
   let path: String
+  let _channel: Channel
 
   var module: (Module val | None)
   var position_index: (PositionIndex val | None)
+  var _document_symbols: (Array[DocumentSymbol] | None)
   var hash: USize
+  var compiler_run_id: USize
 
-  new create(path': String) =>
+  new create(path': String, channel': Channel) =>
     path = path'
+    _channel = channel'
     module = None
     position_index = None
+    _document_symbols = None
     hash = 0
+    compiler_run_id = 0
 
-  fun ref update(module': Module val) =>
+  fun ref update(module': Module val, run_id: USize) =>
+    this.compiler_run_id = compiler_run_id
     this.module = module'
     this.position_index = module'.create_position_index()
+    // only update if it was requested already
+    if this._document_symbols isnt None then
+      this._document_symbols = DocumentSymbols.from_module(module', this._channel)
+      
+    end
     this.hash = module'.hash()
+
+  fun ref document_symbols(): Array[DocumentSymbol] =>
+    """
+    Get or create the current document symbols
+    """
+    match this.module
+    | let mod: Module val =>
+      let created =  DocumentSymbols.from_module(mod, this._channel)
+      this._document_symbols = created
+      created
+    else
+      // no module available yet, no documentsymbols available yet
+      this._channel.log("No module available yet for " + this.path)
+      []
+    end
+
 
   fun dispose() =>
     None

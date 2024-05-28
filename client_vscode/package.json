@@ -37,6 +37,9 @@
           "Pony",
           "pony"
         ],
+        "filenames": [
+          "corral.json"
+        ],
         "extensions": [
           ".pony"
         ],

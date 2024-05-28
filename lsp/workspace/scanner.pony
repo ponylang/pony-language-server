@@ -41,7 +41,7 @@ class WorkspaceScanner
 
     // extract dependencies, also transitive ones
     let locators = JsonPath("$.deps.*.locator", corral_json)?
-    let dependency_paths = recover trn Set[String].create(4) end
+    let dependencies = recover trn Set[String].create(4) end
     for locator in locators.values() do
       try
         let locator_flat_name = Locator(locator as String).flat_name()
@@ -49,21 +49,21 @@ class WorkspaceScanner
 
         let already_in = visited.contains(locator_dir.path)
         if not already_in then
-          dependency_paths.set(locator_dir.path)
+          dependencies.set(locator_flat_name)
           visited.set(locator_dir.path)
           try
             // scan for transitive dependencies
             // but only if we havent visited before
             // to avoid endlees loops over cyclic dependencies 
             let sub_workspace = this._scan_dir(locator_dir, workspace_name, visited)?
-            for dep_path in sub_workspace.dependency_paths.values() do
-              dependency_paths.set(dep_path)
+            for sub_dependency in sub_workspace.dependencies.values() do
+              dependencies.set(sub_dependency)
             end
           end
         end
       end
     end
-    WorkspaceData(workspace_name, dir, consume dependency_paths, consume package_paths)
+    WorkspaceData(workspace_name, dir, consume dependencies, consume package_paths)
 
   fun scan(auth: FileAuth, folder: String, workspace_name: (String | None) = None): Array[WorkspaceData] val =>
     let path = FilePath(auth, folder)
@@ -79,7 +79,7 @@ class WorkspaceScanner
       fun ref apply(dir_path: FilePath val, dir_entries: Array[String val] ref) =>
         try
           // skip over _corral folders
-          let idx = dir_entries.find("_corral")?
+          let idx = dir_entries.find("_corral" where predicate = {(a,b) => a == b})?
           dir_entries.delete(idx)?
         end
         try

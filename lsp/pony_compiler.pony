@@ -6,22 +6,27 @@ use "files"
 
 actor PonyCompiler
   let _pony_path: Array[String val] val
+  
+  var _run_id_gen: USize
 
   new create(pony_path': String) =>
     _pony_path = [pony_path']
+    _run_id_gen = 0
+
 
   be compile(package: FilePath, paths: Array[String val] val, notify: CompilerNotify tag) =>
     let package_paths: Array[String val] ref = this._pony_path.clone()
     package_paths.append(paths)
     let result = Compiler.compile(package, package_paths)
-    notify.done_compiling(package, result)
+    let run_id = _run_id_gen = _run_id_gen + 1
+    notify.done_compiling(package, result, run_id)
 
 
 interface CompilerNotify
   """
   Notify which is called by the compiler when it is done.
   """
-  be done_compiling(package: FilePath, result: (Program val | Array[Error val] val))
+  be done_compiling(package: FilePath, result: (Program val | Array[Error val] val), run: USize)
 
 
 /*

@@ -96,6 +96,31 @@ actor LanguageServer is Notifier
             )
           )
         end
+      | "textDocument/documentSymbol" =>
+        let document_uri = 
+          try
+            _get_document_uri(r.params)?
+          else
+            this._channel.send(
+              ResponseMessage.create(
+                r.id,
+                None,
+                ResponseError(ErrorCodes.internal_error(), "[" + r.method + "] No workspace found for request '" + r.json().string() + "'")
+              )
+            )
+            return
+          end
+        try
+          (_router.find_workspace(document_uri) as WorkspaceManager).document_symbols(document_uri, r)
+        else
+          this._channel.send(
+            ResponseMessage.create(
+              r.id,
+              None,
+              ResponseError(ErrorCodes.internal_error(), "[" + r.method + "] No workspace found for request '" + r.json().string() + "'")
+            )
+          )
+        end
       | "shutdown" =>
         this._state = _ShuttingDown
         this._channel.send(ResponseMessage.create(r.id, None))
@@ -174,34 +199,34 @@ actor LanguageServer is Notifier
           ServerOptions.from_json(params.data("initializationOptions")? as JsonObject)
         end
       // extract workspace folders, rootUri, rootPath in that order:
-      let found_workspaces: Array[JsonType] =
+      let found_workspace: JsonType =
         try
-          JsonPath("$['workspaceFolders', 'rootUri', 'rootPath']", params)?
+          JsonPath("$['workspaceFolders', 'rootUri', 'rootPath']", params)?(0)?
         else
-          []
+          None
         end
       let scanner = WorkspaceScanner.create(this._channel)
-      for workspace in found_workspaces.values() do
-        match workspace
-        | let workspace_str: String =>
-            try
-              let pony_workspaces = scanner.scan(this._file_auth, workspace_str)
-              for pony_workspace in pony_workspaces.values() do
-                let mgr = WorkspaceManager.create(pony_workspace, this._channel, this._compiler)
-                this._channel.log("Adding workspace " + pony_workspace.debug())
-                this._router.add_workspace(pony_workspace.folder, mgr)?
-              end
+      match found_workspace
+      | let workspace_str: String =>
+          try
+            this._channel.log("Scanning workspace " + workspace_str)
+            let pony_workspaces = scanner.scan(this._file_auth, workspace_str)
+            for pony_workspace in pony_workspaces.values() do
+              let mgr = WorkspaceManager.create(pony_workspace, this._file_auth, this._channel, this._compiler)
+              this._channel.log("Adding workspace " + pony_workspace.debug())
+              this._router.add_workspace(pony_workspace.folder, mgr)?
             end
-        | let workspace_arr: JsonArray =>
-          for workspace_obj in workspace_arr.data.values() do
-            try
-              let name = JsonPath("$.name", workspace_obj)?(0)? as String
-              let uri = JsonPath("$.uri", workspace_obj)?(0)? as String
-              for pony_workspace in scanner.scan(this._file_auth, Uris.to_path(uri), name).values() do
-                let mgr = WorkspaceManager.create(pony_workspace, this._channel, this._compiler)
-                this._channel.log("Adding workspace " + pony_workspace.debug())
-                this._router.add_workspace(pony_workspace.folder, mgr)?
-              end
+          end
+      | let workspace_arr: JsonArray =>
+        for workspace_obj in workspace_arr.data.values() do
+          try
+            let name = JsonPath("$.name", workspace_obj)?(0)? as String
+            let uri = JsonPath("$.uri", workspace_obj)?(0)? as String
+            this._channel.log("Scanning workspace " + uri)
+            for pony_workspace in scanner.scan(this._file_auth, Uris.to_path(uri), name).values() do
+              let mgr = WorkspaceManager.create(pony_workspace, this._file_auth, this._channel, this._compiler)
+              this._channel.log("Adding workspace " + pony_workspace.debug())
+              this._router.add_workspace(pony_workspace.folder, mgr)?
             end
           end
         end
@@ -218,7 +243,8 @@ actor LanguageServer is Notifier
               "hoverProvider", true)(
               // Full sync seems to be needed to receive textDocument/didSave
               "textDocumentSync", I64(2))(
-              "definitionProvider", true
+              "definitionProvider", true)(
+              "documentSymbolProvider", true
               ).build()
           )(
             "serverInfo", Obj(
