@@ -2,4 +2,5 @@ _corral
 _repos
 *.vsix
 /pony-lsp
+/client-vscode/pony-lsp
 /test
