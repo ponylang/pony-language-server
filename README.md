@@ -17,9 +17,7 @@ The VSCode extension resides in the folder `client_vscode`.
 ---
 ## Development
 
-- If you don't have an available libponyc compiled with config=debug, start by cloning the repo and dependencies `git clone --recurse-submodules <repo>`
-
-- Build ponyc: `cd ponyc`, `make libs`, `make configure config=debug`, `make build config=debug`
+- Build ponyc: `cd ponyc`, `make libs`, `make configure`, `make build`
 
 - Prepare VSCode extension: `cd client_vscode`, `npm i`
 
@@ -28,7 +26,22 @@ The VSCode extension resides in the folder `client_vscode`.
 If pony compilation fails, the process will stop, so you can press `F5` without fear.
 
 ---
-## Packing VSCode extension
+
+## Creating the Language Server binary
+
+To compile the binary in release mode:
+
+```
+make language_server
+```
+
+In order to compile the language server in `debug` mode, set the `config` variable to `debug`:
+
+```
+make config=debug language_server
+```
+
+## Creating the VSCode extension
 
 You can pack the extension by running `vsce pack` in the client_vscode folder. You
 will get a `pony.vsix` file which you can install in vscode using `code --install-extension pony.vsix` 

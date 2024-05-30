@@ -34,7 +34,11 @@ endif
 
 SOURCE_FILES := $(shell find $(SRC_DIR) -name *.pony)
 
-all: $(binary) test
+all: language_server test vscode_extension
+
+language_server: $(binary)
+
+vscode_extension: language_server
 	$(MAKE) -C client_vscode
 
 test: $(tests_binary)
