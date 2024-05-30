@@ -35,6 +35,7 @@ endif
 SOURCE_FILES := $(shell find $(SRC_DIR) -name *.pony)
 
 all: $(binary) test
+	$(MAKE) -C client_vscode
 
 test: $(tests_binary)
 	$^ --exclude=integration
@@ -50,6 +51,7 @@ $(binary): $(SOURCE_FILES) | $(BUILD_DIR)
 clean:
 	$(CLEAN_DEPENDENCIES_WITH)
 	rm -rf $(BUILD_DIR)
+	$(MAKE) -C client_vscode clean
 
 $(docs_dir): $(SOURCE_FILES)
 	rm -rf $(docs_dir)
