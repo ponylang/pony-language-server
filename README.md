@@ -43,5 +43,17 @@ make config=debug language_server
 
 ## Creating the VSCode extension
 
-You can pack the extension by running `vsce pack` in the client_vscode folder. You
-will get a `pony.vsix` file which you can install in vscode using `code --install-extension pony.vsix` 
+```
+make vscode_extension
+```
+
+This will create the extension package as a `.vsix` file in the `build/release` folder. E.g. `build/release/pony-lsp-0.58.4.vsix`.
+
+## Installing the VSCode extension
+
+```
+code --uninstall-extension undefined_publisher.pony-lsp
+code --install-extension build/release/pony-lsp-0.58.4.vsix
+```
+
+Check the actual folder and version of the extension being built.
