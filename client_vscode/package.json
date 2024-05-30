@@ -2,7 +2,7 @@
   "name": "pony-lsp",
   "description": "A Pony language server",
   "license": "MIT",
-  "version": "0.58.2",
+  "version": "0.58.4",
   "categories": [],
   "repository": "https://github.com/kidandcat/pony-language-server",
   "engines": {

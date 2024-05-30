@@ -24,6 +24,7 @@ use capsicum = "capsicum"
 use cli = "cli"
 use collections = "collections"
 use collections_persistent = "collections/persistent"
+use constrained_types = "constrained_types"
 use debug = "debug"
 use files = "files"
 use format = "format"
@@ -36,6 +37,7 @@ use pony_check = "pony_check"
 use process = "process"
 use promises = "promises"
 use random = "random"
+use runtime_info = "runtime_info"
 use serialise = "serialise"
 use signals = "signals"
 use strings = "strings"
@@ -56,6 +58,7 @@ actor \nodoc\ Main is TestList
     cli.Main.make().tests(test)
     collections.Main.make().tests(test)
     collections_persistent.Main.make().tests(test)
+    constrained_types.Main.make().tests(test)
     files.Main.make().tests(test)
     format.Main.make().tests(test)
     ini.Main.make().tests(test)
@@ -66,6 +69,7 @@ actor \nodoc\ Main is TestList
     process.Main.make().tests(test)
     promises.Main.make().tests(test)
     random.Main.make().tests(test)
+    runtime_info.Main.make().tests(test)
     serialise.Main.make().tests(test)
     strings.Main.make().tests(test)
     time.Main.make().tests(test)
