@@ -78,11 +78,7 @@ actor WorkspaceManager
         this._channel.log("ERROR: " + err.msg + " in file " + err.file.string())
         let diagnostic = Diagnostic.from_error(err)
         errors_by_file.upsert(
-          try
-            err.file as String
-          else
-            "no_file"
-          end,
+          err.file.string(),
           recover iso
             [as JsonType: diagnostic.to_json()]
           end,

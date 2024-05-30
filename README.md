@@ -5,13 +5,7 @@ Language server for Pony. See https://github.com/Microsoft/language-server-proto
 ---
 ## Structure
 
-The Main actor setup everything and maps commands to the proper lsp actor.
-
-The LSP protocol has been divided in actors based on the subcategories of
-the spec, these are the pony files starting with `lsp_`.
-
-The different channel implementations reside in the files prefixed with 
-`channel_`.
+The language server is started as a separate actor, which is given a channel for communication with the language-server client. After initialization it starts one actor for each workspace it is invoked for and routes requests to one of those workspace actors. They implement the actual LSP logic. It is also those actors that invoke the compiler actor, which executes a subset of the pony compiler passes in-process in order to get an AST to do LSP analysis on.
 
 ---
 ## Extensions
@@ -19,18 +13,6 @@ The different channel implementations reside in the files prefixed with
 The VSCode extension resides in the folder `client_vscode`.
 
 
----
-## Requirements
-
-- `libponyc-standalone` is needed for pony-ast to compile. Right now it is only built on
-linux, for macos you will need this change: https://github.com/ponylang/ponyc/pull/4303. For windows, you will have to find your own way at the moment.
-IMPORTANT: libponyc has to be compiled in debug mode
-
-
-- `stdlib` is required for libponyc to work, so the environment variable
-`PONYPATH` has to point to the `packages` folder in the ponyc source code.
-For VSCode, we are copying it to the extension folder, and the extension is setting
-the env variable (`build.sh`).
 
 ---
 ## Development

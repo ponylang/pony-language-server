@@ -3,4 +3,4 @@ _repos
 *.vsix
 /pony-lsp
 /client-vscode/pony-lsp
-/test
+/build/

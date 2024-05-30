@@ -41,13 +41,12 @@ class \nodoc\ iso _InitializeTest is UnitTest
       }
       where after_sends = 1, after_logs = USize.max_value()
     )
-    let file_auth = FileAuth(h.env.root)
     let pony_path =
       match PonyPath(h.env)
       | let p: String => p
       | None => ""
       end
-    let server = LanguageServer(channel, file_auth, pony_path)
+    let server = LanguageServer(channel, h.env, pony_path)
 
     let base = BaseProtocol(server)
     base(_LspMsg("""
