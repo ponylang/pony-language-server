@@ -11,7 +11,7 @@
     },
     {
       "locator": "github.com/mfelsche/pony-ast.git",
-      "version": "63537bc4e9f3bc33cded9f665b9c6684d9140063"
+      "version": "v0.2.1"
     }
   ],
   "info": {
