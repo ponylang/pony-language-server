@@ -40,7 +40,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4.1.1
       - name: Install dependencies
-        run: sudo apt install -y npm
+        run: apt install -y npm
       - name: Test
         run: make test config=debug
       - name: Test creation of vscode extension
