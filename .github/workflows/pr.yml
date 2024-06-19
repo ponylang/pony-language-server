@@ -39,6 +39,8 @@ jobs:
       image: ghcr.io/ponylang/shared-docker-ci-x86-64-unknown-linux-builder:release
     steps:
       - uses: actions/checkout@v4.1.1
+      - name: Install dependencies
+        run: sudo apt install -y npm
       - name: Test
         run: make test config=debug
       - name: Test creation of vscode extension
