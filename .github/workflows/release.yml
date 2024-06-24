@@ -50,15 +50,15 @@ jobs:
       - name: Generate documentation
         run: /entrypoint.py
         env:
-          INPUT_SITE_URL: "https://ponylang.github.io/http_server/"
-          INPUT_LIBRARY_NAME: "http_server"
-          INPUT_DOCS_BUILD_DIR: "build/http_server-docs"
+          INPUT_SITE_URL: "https://ponylang.github.io/pony_language_server/"
+          INPUT_LIBRARY_NAME: "lsp"
+          INPUT_DOCS_BUILD_DIR: "build/lsp-docs"
       - name: Setup Pages
         uses: actions/configure-pages@v2
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v1
         with:
-          path: 'build/http_server-docs/site/'
+          path: 'build/lsp-docs/site/'
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v1
