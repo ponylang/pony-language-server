@@ -36,6 +36,7 @@ actor LanguageServer is Notifier
   new create(channel': Channel, env': Env, pony_path: String = "") =>
     channel'.set_notifier(this)
     _channel = channel'
+    _channel.log("initial PONYPATH: " + pony_path)
     _compiler = PonyCompiler(pony_path)
     _router = WorkspaceRouter.create()
     _env = env'
@@ -241,8 +242,11 @@ actor LanguageServer is Notifier
               // "positionEncoding", "utf-8")(
               // we can handle hover requests
               "hoverProvider", true)(
-              // Full sync seems to be needed to receive textDocument/didSave
-              "textDocumentSync", I64(2))(
+              "textDocumentSync", Obj(
+                "change", I64(0))(
+                "openClose", true)(
+                "save", Obj("includeText", false))
+              )(
               "definitionProvider", true)(
               "documentSymbolProvider", true
               ).build()
