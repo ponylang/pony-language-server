@@ -160,6 +160,7 @@ actor WorkspaceManager
       this._channel.log("No document state found for " + document_path + ". Dunno what to do!")
     end
     // re-compile changed program - continuing in `done_compiling`
+    _channel.log("Compiling package " + package.path + " with dependency-paths: " + ", ".join(workspace.dependency_paths.values()))
     _compiler.compile(package, workspace.dependency_paths, this)
 
   be hover(document_uri: String, request: RequestMessage val) =>
