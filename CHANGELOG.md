@@ -2,17 +2,11 @@
 
 All notable changes to this project will be documented in this file. This project adheres to [Semantic Versioning](http://semver.org/) and [Keep a CHANGELOG](http://keepachangelog.com/).
 
-## [unreleased] - unreleased
+## [0.2.2] - 2024-07-27
 
 ### Fixed
 
 - Properly set textDocumentSync properties of the serverCapabilities ([PR #7](https://github.com/ponylang/pony-language-server/pull/7))
-
-### Added
-
-
-### Changed
-
 
 ## [0.2.1] - 2024-06-24
 
