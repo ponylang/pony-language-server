@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file. This projec
 
 ### Fixed
 
+- Properly set textDocumentSync properties of the serverCapabilities ([PR #7](https://github.com/ponylang/pony-language-server/pull/7))
 
 ### Added
 
