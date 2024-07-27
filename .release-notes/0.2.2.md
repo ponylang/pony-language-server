@@ -1,0 +1,6 @@
+## Fix textDocumentSync server capability
+
+Previously the `textDocumentSync` property was malformed and not according to spec.
+It seemed vscode did the right thing and fell back to sending both `didChange` and `didSave` notifications anyways.
+Neovim didn't, so we didn't receive any `didSave` notifications. Now everything is working as expected with neovim and vscode.
+
