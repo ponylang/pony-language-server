@@ -13,7 +13,7 @@ class val WorkspaceData
   let dependencies: Array[String] val
   // absolute paths (derived from folder and dependencies)
   let dependency_paths: Array[String] val
-  // absolute paths
+  // absolute paths of packages listed in all corral.json files (including dependencies)
   let package_paths: Set[String] val
   let _min_package_paths_len: USize
   // TODO: further structure a workspace into different packages, separately
@@ -74,5 +74,19 @@ class val WorkspaceData
       doc_path = Path.dir(doc_path)
     end
     None
+
+  fun workspace_path(path: String): FilePath ? =>
+    // check if path is within the workspace folder
+    let found_idx =
+      try
+        path.find(this.folder.path)?
+      else
+        -1
+      end
+    if found_idx == 0 then
+      this.folder.join(path.substring(this.folder.path.size().isize() + 1))?
+    else
+      error
+    end
 
 
