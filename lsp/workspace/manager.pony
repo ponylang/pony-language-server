@@ -7,7 +7,17 @@ use "immutable-json"
 
 actor WorkspaceManager
   """
-  Handling all operations on a workspace
+  Handling all operations on a workspace.
+
+  A workspace is initially created by scanning its directory and extracting information from available
+  `corral.json` files.
+
+  More information is obtained during execution of the type-checking pipeline of the libponyc compiler. 
+  While the initial information must be enough to successfully type-check the program (populating the `$PONYPATH` env var),
+  the AST we get back from type-checking contains all packages the program in this workspace consists of.
+
+  After first successful compilation we should have all information at hand to do LSP work. 
+  i.e. all packages we can move to from opened files in the workspace should be available.
   """
   let workspace: WorkspaceData
   let _file_auth: FileAuth
@@ -43,11 +53,21 @@ actor WorkspaceManager
       None
     end
 
-  fun ref _find_workspace_package(document_path: String): FilePath =>
-    match this.workspace.find_package(document_path)
-    | let pkg: FilePath => pkg
-    | None => this.workspace.folder
+  fun box _find_workspace_package(document_path: String): FilePath ? =>
+    var dir_path = Path.dir(document_path)
+    while (dir_path != ".") do
+      if this._packages.contains(dir_path) then
+        return
+          if Path.is_abs(dir_path) then
+            // TODO: ensure files are on the PONYPATH?
+            FilePath(this._file_auth, dir_path)
+          else
+            this.workspace.folder.join(dir_path)?
+          end
+      end
+      dir_path = Path.dir(dir_path)
     end
+    error
 
   be done_compiling(program_dir: FilePath, result: (Program val | Array[Error val] val), run: USize) =>
     this._channel.log("done compiling " + program_dir.path)
@@ -108,14 +128,32 @@ actor WorkspaceManager
     """
     Handling the textDocument/didOpen notification
     """
-    let document_path = Uris.to_path(document_uri)
+    var document_path = Uris.to_path(document_uri)
     this._channel.log("handling did_open of " + document_path)
-    let package: FilePath = this._find_workspace_package(document_path)
-    this._channel.log("Found pony package @ " + package.path)
+
+    // check if we have a package for this document
+    // if so, get the package FilePath
+    // if we have no package:
+    //
+    let package: FilePath =
+      try
+        this._find_workspace_package(document_path)?
+      else
+        var package_path = Path.dir(document_path)
+        if not Path.is_abs(package_path) then
+          try
+            this.workspace.folder.join(package_path)?
+          else
+            _channel.log("Error determining package_path for " + document_path)
+            return
+          end
+        else
+          FilePath(this._file_auth, package_path)
+        end
+      end
+    this._channel.log("did_open in pony package @ " + package.path)
     let package_state = this._ensure_package(package)
-    match package_state.get_document(document_path)
-    | let doc_state: DocumentState => None // already there
-    | None =>
+    if not package_state.has_document(document_path) then
       (let inserted_doc_state, let has_module) = package_state.insert_new(document_path)
       if not has_module then
         _channel.log("No module found for document " + document_path + ". Need to compile.")
@@ -129,11 +167,15 @@ actor WorkspaceManager
     """
     let document_path = Uris.to_path(document_uri)
     this._channel.log("handling did_close of " + document_path)
-    let package: FilePath = this._find_workspace_package(document_path)
-    let package_state = this._ensure_package(package)
     try
-      let document_state = package_state.documents.remove(document_path)?._2
-      document_state.dispose()
+      let package: FilePath = this._find_workspace_package(document_path)?
+      let package_state = this._ensure_package(package)
+      try
+        let document_state = package_state.documents.remove(document_path)?._2
+        document_state.dispose()
+      end
+    else
+      _channel.log("document not in workspace: " + document_path)
     end
 
   be did_save(document_uri: String, notification: Notification val) =>
@@ -144,25 +186,30 @@ actor WorkspaceManager
     this._channel.log("handling did_save of " + document_path)
     // TODO: don't compile multiple times for multiple documents being saved one
     // after the other
-    let package: FilePath = this._find_workspace_package(document_path)
-    let package_state = this._ensure_package(package)
-    match package_state.get_document(document_path)
-    | let doc_state: DocumentState =>
-      // check for differences to decide if we need to compile
-      let old_state_hash =
-        match doc_state.module
-        | let module: Module => module.hash()
-        else
-          0 // no module
-        end
-    | None =>
-      // no document state found - wtf are we gonna do here?
-      this._channel.log("No document state found for " + document_path + ". Dunno what to do!")
+    try
+      let package: FilePath = this._find_workspace_package(document_path)?
+      let package_state = this._ensure_package(package)
+      match package_state.get_document(document_path)
+      | let doc_state: DocumentState =>
+          None
+          // TODO: check for differences to decide if we need to compile
+          //let old_state_hash =
+          //  match doc_state.module
+          //  | let module: Module => module.hash()
+          //  else
+          //    0 // no module
+          //  end
+      | None =>
+          // no document state found - wtf are we gonna do here?
+          this._channel.log("No document state found for " + document_path + ". Dunno what to do!")
+      end
+      // re-compile changed program - continuing in `done_compiling`
+      _channel.log("Compiling package " + package.path + " with dependency-paths: " + ", ".join(workspace.dependency_paths.values()))
+      _compiler.compile(package, workspace.dependency_paths, this)
+    else
+      _channel.log("document not in workspace: " + document_path)
     end
-    // re-compile changed program - continuing in `done_compiling`
-    _channel.log("Compiling package " + package.path + " with dependency-paths: " + ", ".join(workspace.dependency_paths.values()))
-    _compiler.compile(package, workspace.dependency_paths, this)
-
+  
   be hover(document_uri: String, request: RequestMessage val) =>
     """
     Handling the textDocument/hover request
@@ -193,51 +240,55 @@ actor WorkspaceManager
         return
       end
     let document_path = Uris.to_path(document_uri)
-    let package: FilePath = this._find_workspace_package(document_path)
+    try
+      let package: FilePath = this._find_workspace_package(document_path)?
 
-    match this._get_package(package)
-    | let pkg_state: PackageState =>
-        //this._channel.log(pkg_state.debug())
-        match pkg_state.get_document(document_path)
-        | let doc: DocumentState =>
-          match doc.position_index
-          | let index: PositionIndex =>
-            match index.find_node_at(USize.from[I64](line + 1), USize.from[I64](column + 1)) // pony lines and characters are 1-based, lsp are 0-based
-            | let ast: AST box =>
-              this._channel.log(ast.debug())
-              var json_builder = Arr.create()
-              // iterate through all found definitions
-              for ast_definition in ast.definitions().values() do
-                // get position of the found definition
-                (let start_pos, let end_pos) = ast_definition.span()
-                try
-                  // append new location
-                  json_builder = json_builder(
-                    LspLocation(
-                      Uris.from_path(ast_definition.source_file() as String val),
-                      LspPositionRange(
-                        LspPosition.from_ast_pos(start_pos),
-                        LspPosition.from_ast_pos(end_pos)
-                      )
-                    ).to_json()
-                  )
-                else
-                  this._channel.log("No source file found for definition: " + ast_definition.debug())
+      match this._get_package(package)
+      | let pkg_state: PackageState =>
+          //this._channel.log(pkg_state.debug())
+          match pkg_state.get_document(document_path)
+          | let doc: DocumentState =>
+            match doc.position_index
+            | let index: PositionIndex =>
+              match index.find_node_at(USize.from[I64](line + 1), USize.from[I64](column + 1)) // pony lines and characters are 1-based, lsp are 0-based
+              | let ast: AST box =>
+                this._channel.log(ast.debug())
+                var json_builder = Arr.create()
+                // iterate through all found definitions
+                for ast_definition in ast.definitions().values() do
+                  // get position of the found definition
+                  (let start_pos, let end_pos) = ast_definition.span()
+                  try
+                    // append new location
+                    json_builder = json_builder(
+                      LspLocation(
+                        Uris.from_path(ast_definition.source_file() as String val),
+                        LspPositionRange(
+                          LspPosition.from_ast_pos(start_pos),
+                          LspPosition.from_ast_pos(end_pos)
+                        )
+                      ).to_json()
+                    )
+                  else
+                    this._channel.log("No source file found for definition: " + ast_definition.debug())
+                  end
                 end
+                this._channel.send(ResponseMessage(request.id, json_builder.build()))
+                return // exit, otherwise we send a null resul
+              | None =>
+                this._channel.log("No AST node found @ " + line.string() + ":" + column.string())
               end
-              this._channel.send(ResponseMessage(request.id, json_builder.build()))
-              return // exit, otherwise we send a null resul
-            | None =>
-              this._channel.log("No AST node found @ " + line.string() + ":" + column.string())
+            else
+              this._channel.log("No position index available for " + document_path)
             end
           else
-            this._channel.log("No position index available for " + document_path)
+            this._channel.log("No document state available for " + document_path)
           end
-        else
-          this._channel.log("No document state available for " + document_path)
-        end
-    | None =>
-      this._channel.log("No package state available for package: " + package.path)
+      | None =>
+        this._channel.log("No package state available for package: " + package.path)
+      end
+    else
+      this._channel.log("document not in workspace: " + document_path)
     end
     // send a null-response in every failure case
     this._channel.send(ResponseMessage.create(request.id, None))
@@ -245,26 +296,30 @@ actor WorkspaceManager
   be document_symbols(document_uri: String, request: RequestMessage val) =>
     this._channel.log("Handling textDocument/documentSymbol")
     let document_path = Uris.to_path(document_uri)
-    let package: FilePath = this._find_workspace_package(document_path)
-    match this._get_package(package)
-    | let pkg_state: PackageState =>
-        //this._channel.log(pkg_state.debug())
-        match pkg_state.get_document(document_path)
-        | let doc: DocumentState =>
-          let symbols = doc.document_symbols()
-          var json_builder = Arr
-          for symbol in symbols.values() do
-            json_builder = json_builder(symbol.to_json())
+    try
+      let package: FilePath = this._find_workspace_package(document_path)?
+      match this._get_package(package)
+      | let pkg_state: PackageState =>
+          //this._channel.log(pkg_state.debug())
+          match pkg_state.get_document(document_path)
+          | let doc: DocumentState =>
+            let symbols = doc.document_symbols()
+            var json_builder = Arr
+            for symbol in symbols.values() do
+              json_builder = json_builder(symbol.to_json())
+            end
+            this._channel.send((ResponseMessage(request.id, json_builder.build())))
+            return
+          | None =>
+            this._channel.log("No document state available for " + document_path)
           end
-          this._channel.send((ResponseMessage(request.id, json_builder.build())))
-          return
-        | None =>
-          this._channel.log("No document state available for " + document_path)
-        end
-    | None =>
-      this._channel.log("No package state available for package: " + package.path)
+      | None =>
+        this._channel.log("No package state available for package: " + package.path)
+      end
+      // send a null-response in every failure case
+    else
+      this._channel.log("document not in workspace: " + document_path)
     end
-    // send a null-response in every failure case
     this._channel.send(ResponseMessage.create(request.id, None))
 
   be dispose() =>

@@ -154,11 +154,11 @@ primitive DocumentSymbols
     symbols
 
   fun tag find_members(entity: AST, symbol: DocumentSymbol ref, channel: Channel) =>
-    let members = 
+    let members =
       try
         entity(4)?
       else
-        channel.log("No members node at child idx 2 for node " + TokenIds.string(entity.id()))
+        channel.log("No members node at child idx 4 for node " + TokenIds.string(entity.id()))
         return
       end
     if members.id() != TokenIds.tk_members() then
@@ -192,7 +192,6 @@ primitive DocumentSymbols
             )
             let member_symbol = DocumentSymbol(name, kind, full_range, selection_range)
             symbol.push_child(member_symbol)
-            // TODO: recurse even deeper into local variables etc?
           end
         end
     end

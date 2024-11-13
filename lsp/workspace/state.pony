@@ -45,11 +45,18 @@ class PackageState
       this.documents(document_path)?
     end
 
+  fun has_document(document_path: String): Bool =>
+    this.documents.contains(document_path)
+
   fun ref insert_new(document_path: String): (DocumentState, Bool) =>
+    """
+    Insert a new module by the given `document_path` into this package
+    """
     var has_module = false
     let doc_state = DocumentState.create(document_path, this._channel)
 
     try
+      // populate the document from the last compilation result if available
       let pkg = this.package as Package
       let module = pkg.find_module(document_path) as Module
       doc_state.update(module, this.compiler_run_id)
@@ -64,10 +71,14 @@ class PackageState
     )
 
   fun ref update(result: Package val, run_id: USize) =>
+    """
+    Update the current package state with the result of the compilation run identified by `run_id`.
+    """
     this.compiler_run_id = run_id
     this.package = result
     this._channel.log("Updating package " + result.path)
     this._channel.log(this.debug())
+    // for each open document, update the document state if we have a module for it
     for (doc_path, doc_state) in this.documents.pairs() do
       // TODO: ensure both module and package-state paths are normalized
       match result.find_module(doc_path)
