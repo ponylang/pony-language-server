@@ -45,6 +45,9 @@ class PackageState
       this.documents(document_path)?
     end
 
+  fun has_document(document_path: String): Bool =>
+    this.documents.contains(document_path)
+
   fun ref insert_new(document_path: String): (DocumentState, Bool) =>
     """
     Insert a new module by the given `document_path` into this package

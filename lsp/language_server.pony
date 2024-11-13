@@ -98,7 +98,7 @@ actor LanguageServer is Notifier
           )
         end
       | "textDocument/documentSymbol" =>
-        let document_uri = 
+        let document_uri =
           try
             _get_document_uri(r.params)?
           else

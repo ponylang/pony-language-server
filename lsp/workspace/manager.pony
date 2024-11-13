@@ -53,17 +53,21 @@ actor WorkspaceManager
       None
     end
 
-  fun ref _find_workspace_package(document_path: String): (FilePath | None) =>
+  fun box _find_workspace_package(document_path: String): FilePath ? =>
     var dir_path = Path.dir(document_path)
     while (dir_path != ".") do
       if this._packages.contains(dir_path) then
-        return 
-          try
-            this.workspace.workspace_path(dir_path)?
+        return
+          if Path.is_abs(dir_path) then
+            // TODO: ensure files are on the PONYPATH?
+            FilePath(this._file_auth, dir_path)
+          else
+            this.workspace.folder.join(dir_path)?
           end
       end
+      dir_path = Path.dir(dir_path)
     end
-    None
+    error
 
   be done_compiling(program_dir: FilePath, result: (Program val | Array[Error val] val), run: USize) =>
     this._channel.log("done compiling " + program_dir.path)
@@ -124,24 +128,37 @@ actor WorkspaceManager
     """
     Handling the textDocument/didOpen notification
     """
-    let document_path = Uris.to_path(document_uri)
+    var document_path = Uris.to_path(document_uri)
     this._channel.log("handling did_open of " + document_path)
-    let package_path = Path.dir(document_path)
-    try
-      let package: FilePath = this.workspace.workspace_path(package_path)?
-      this._channel.log("did_open in pony package @ " + package.path)
-      let package_state = this._ensure_package(package)
-      match package_state.get_document(document_path)
-      | let doc_state: DocumentState => None // already there
-      | None =>
-        (let inserted_doc_state, let has_module) = package_state.insert_new(document_path)
-        if not has_module then
-          _channel.log("No module found for document " + document_path + ". Need to compile.")
-          _compiler.compile(package, workspace.dependency_paths, this)
+
+    // check if we have a package for this document
+    // if so, get the package FilePath
+    // if we have no package:
+    //
+    let package: FilePath =
+      try
+        this._find_workspace_package(document_path)?
+      else
+        var package_path = Path.dir(document_path)
+        if not Path.is_abs(package_path) then
+          try
+            this.workspace.folder.join(package_path)?
+          else
+            _channel.log("Error determining package_path for " + document_path)
+            return
+          end
+        else
+          FilePath(this._file_auth, package_path)
         end
       end
-    else
-      _channel.log("document not in workspace: " + document_path)
+    this._channel.log("did_open in pony package @ " + package.path)
+    let package_state = this._ensure_package(package)
+    if not package_state.has_document(document_path) then
+      (let inserted_doc_state, let has_module) = package_state.insert_new(document_path)
+      if not has_module then
+        _channel.log("No module found for document " + document_path + ". Need to compile.")
+        _compiler.compile(package, workspace.dependency_paths, this)
+      end
     end
 
   be did_close(document_uri: String, notification: Notification val) =>
@@ -150,9 +167,8 @@ actor WorkspaceManager
     """
     let document_path = Uris.to_path(document_uri)
     this._channel.log("handling did_close of " + document_path)
-    let package_path = Path.dir(document_path)
     try
-      let package: FilePath = this.workspace.workspace_path(package_path)?
+      let package: FilePath = this._find_workspace_package(document_path)?
       let package_state = this._ensure_package(package)
       try
         let document_state = package_state.documents.remove(document_path)?._2
@@ -168,24 +184,24 @@ actor WorkspaceManager
     """
     let document_path = Uris.to_path(document_uri)
     this._channel.log("handling did_save of " + document_path)
-    let package_path = Path.dir(document_path)
     // TODO: don't compile multiple times for multiple documents being saved one
     // after the other
     try
-      let package: FilePath = this.workspace.workspace_path(package_path)?
+      let package: FilePath = this._find_workspace_package(document_path)?
       let package_state = this._ensure_package(package)
       match package_state.get_document(document_path)
       | let doc_state: DocumentState =>
-        // TODO: check for differences to decide if we need to compile
-        let old_state_hash =
-          match doc_state.module
-          | let module: Module => module.hash()
-          else
-            0 // no module
-          end
+          None
+          // TODO: check for differences to decide if we need to compile
+          //let old_state_hash =
+          //  match doc_state.module
+          //  | let module: Module => module.hash()
+          //  else
+          //    0 // no module
+          //  end
       | None =>
-        // no document state found - wtf are we gonna do here?
-        this._channel.log("No document state found for " + document_path + ". Dunno what to do!")
+          // no document state found - wtf are we gonna do here?
+          this._channel.log("No document state found for " + document_path + ". Dunno what to do!")
       end
       // re-compile changed program - continuing in `done_compiling`
       _channel.log("Compiling package " + package.path + " with dependency-paths: " + ", ".join(workspace.dependency_paths.values()))
@@ -224,9 +240,8 @@ actor WorkspaceManager
         return
       end
     let document_path = Uris.to_path(document_uri)
-    let package_path = Path.dir(document_path)
     try
-      let package: FilePath = this.workspace.workspace_path(package_path)?
+      let package: FilePath = this._find_workspace_package(document_path)?
 
       match this._get_package(package)
       | let pkg_state: PackageState =>
@@ -281,9 +296,8 @@ actor WorkspaceManager
   be document_symbols(document_uri: String, request: RequestMessage val) =>
     this._channel.log("Handling textDocument/documentSymbol")
     let document_path = Uris.to_path(document_uri)
-    let package_path = Path.dir(document_path)
     try
-      let package: FilePath = this.workspace.workspace_path(package_path)?
+      let package: FilePath = this._find_workspace_package(document_path)?
       match this._get_package(package)
       | let pkg_state: PackageState =>
           //this._channel.log(pkg_state.debug())
