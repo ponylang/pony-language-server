@@ -2,6 +2,7 @@ use ".."
 use "assert"
 use "collections"
 use "files"
+use "itertools"
 use "immutable-json"
 
 class WorkspaceScanner
@@ -10,14 +11,14 @@ class WorkspaceScanner
   new val create(channel: Channel) =>
     _channel = channel
 
-  fun _scan_dir(
+  fun _scan_corral_dir(
     dir: FilePath,
     workspace_name: String,
     visited: Set[String] ref = Set[String].create()
   ): WorkspaceData ? =>
     visited.set(dir.path)
 
-    // load corral.json
+    // load corral.json if available
     let corral_json_path = dir.join("corral.json")?
     _channel.log("corral.json @ " + corral_json_path.path)
     let corral_json_file = OpenFile(corral_json_path) as File
@@ -55,7 +56,7 @@ class WorkspaceScanner
             // scan for transitive dependencies
             // but only if we havent visited before
             // to avoid endlees loops over cyclic dependencies 
-            let sub_workspace = this._scan_dir(locator_dir, workspace_name, visited)?
+            let sub_workspace = this._scan_corral_dir(locator_dir, workspace_name, visited)?
             for sub_dependency in sub_workspace.dependencies.values() do
               dependencies.set(sub_dependency)
             end
@@ -82,11 +83,29 @@ class WorkspaceScanner
           let idx = dir_entries.find("_corral" where predicate = {(a,b) => a == b})?
           dir_entries.delete(idx)?
         end
+        // first look for a `corral.json` file
         try
           dir_entries.find("corral.json" where predicate = {(a,b) => a == b})?
-          let workspace = that._scan_dir(dir_path, name)?
+          let workspace = that._scan_corral_dir(dir_path, name)?
           _channel.log("Added workspace: " + workspace.debug())
           workspaces.push(workspace)
+        end
+        // if no `corral.json` could be found, search for a `main.pony`
+        try
+          // ensure we are not inside a folder that is alrady in a workspace,
+          // those are scanned
+          dir_entries.find("main.pony" where predicate = {(a,b) => a == b})?
+          try
+            Iter[WorkspaceData](workspaces.values()).find({(workspace: WorkspaceData) =>
+              dir_path.path.at(workspace.folder.path, 0)
+            })?
+          else
+            // not inside a known workspace
+            let main_workspace_name: String = dir_path.path.substring((folder.size() + 1).isize())
+            workspaces.push(
+              WorkspaceData(main_workspace_name, dir_path, Set[String].create(0), Set[String].create(0))
+            )
+          end
         end
 
     end
