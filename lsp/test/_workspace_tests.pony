@@ -23,8 +23,15 @@ class \nodoc\ iso _RouterFindTest is UnitTest
       })
     let scanner = WorkspaceScanner.create(channel)
     let workspaces = scanner.scan(file_auth, this_dir_path)
-    h.assert_eq[USize](1, workspaces.size())
-    let workspace = workspaces(0)?
+    h.assert_eq[USize](2, workspaces.size())
+    // main.pony workspace has been found first
+    var workspace = workspaces(0)?
+    h.assert_eq[String](folder.path, workspace.folder.path)
+
+    // corral workspace
+    workspace = workspaces(1)?
+    h.assert_eq[String](folder.join("workspace")?.path, workspace.folder.path)
+    
     let router = WorkspaceRouter.create()
     let compiler = PonyCompiler("") // dummy, not actually in use
     
