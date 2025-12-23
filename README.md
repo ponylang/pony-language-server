@@ -4,6 +4,32 @@ Language server for Pony. For more information see the [Language Server Standard
 
 ---
 
+## Installation
+
+### Homebrew (macOS and Linux)
+
+The easiest way to install `pony-lsp` on macOS and Linux is via Homebrew:
+
+```sh
+brew install pony-language-server
+```
+
+### VSCode Extension
+
+After installing the language server binary, install the VSCode extension:
+
+1. Build the extension package: `make vscode_extension`
+2. Install the generated `.vsix` file:
+   ```sh
+   code --install-extension build/release/pony-lsp-*.vsix
+   ```
+
+### Building from Source
+
+If you prefer to build from source or are on a platform without Homebrew support, see the [Creating the Language Server binary](#creating-the-language-server-binary) section below.
+
+---
+
 ## Structure
 
 The language server is started as a separate actor,
@@ -25,7 +51,27 @@ The VSCode extension resides in the folder `client_vscode`.
 
 ## Development
 
-- Build ponyc: `cd ponyc`, `make libs`, `make configure`, `make build`
+### Prerequisites
+
+- **Install ponyc**: The Pony compiler is required for development.
+
+  On macOS and Linux via Homebrew:
+  ```sh
+  brew install ponyc
+  ```
+
+  For other platforms or building from source, see [https://github.com/ponylang/ponyc](https://github.com/ponylang/ponyc)
+
+- **Install corral**: The Pony dependency manager is required for development.
+
+  On macOS and Linux via Homebrew:
+  ```sh
+  brew install corral
+  ```
+
+  For other platforms or building from source, see [https://github.com/ponylang/corral](https://github.com/ponylang/corral)
+
+### Setup Steps
 
 - Prepare VSCode extension: `cd client_vscode`, `npm i`
 
