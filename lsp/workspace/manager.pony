@@ -312,7 +312,7 @@ actor WorkspaceManager
     (let start_pos, let end_pos) = ast.span()
     let hover_range = LspPositionRange(
       LspPosition.from_ast_pos(start_pos),
-      LspPosition.from_ast_pos(end_pos)
+      LspPosition.from_ast_pos_end(end_pos)
     )
 
     Obj(
