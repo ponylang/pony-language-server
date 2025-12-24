@@ -308,8 +308,9 @@ actor WorkspaceManager
       "value", hover_text
     ).build()
 
-    // Include range (using node's span)
-    (let start_pos, let end_pos) = ast.span()
+    // Use identifier's span for highlight range if this is a declaration
+    let highlight_node = _get_identifier_for_highlight(ast)
+    (let start_pos, let end_pos) = highlight_node.span()
     let hover_range = LspPositionRange(
       LspPosition.from_ast_pos(start_pos),
       LspPosition.from_ast_pos_end(end_pos)
@@ -424,6 +425,44 @@ actor WorkspaceManager
       this._channel.log("document not in workspace: " + document_path)
     end
     this._channel.send(ResponseMessage.create(request.id, None))
+
+  fun _get_identifier_for_highlight(ast: AST box): AST box =>
+    """
+    Extract the identifier child from declaration nodes for highlighting.
+    For declarations (class, fun, let, etc.), return the identifier child.
+    Otherwise return the original node.
+    """
+    match ast.id()
+    | TokenIds.tk_class() | TokenIds.tk_actor() | TokenIds.tk_trait()
+    | TokenIds.tk_interface() | TokenIds.tk_primitive() | TokenIds.tk_type()
+    | TokenIds.tk_struct() =>
+      // Entity declarations: identifier is at child(0)
+      try
+        let id = ast(0)?
+        if id.id() == TokenIds.tk_id() then
+          return id
+        end
+      end
+    | TokenIds.tk_fun() | TokenIds.tk_be() | TokenIds.tk_new() =>
+      // Method declarations: identifier is at child(1)
+      try
+        let id = ast(1)?
+        if id.id() == TokenIds.tk_id() then
+          return id
+        end
+      end
+    | TokenIds.tk_flet() | TokenIds.tk_fvar() | TokenIds.tk_embed()
+    | TokenIds.tk_let() | TokenIds.tk_var() =>
+      // Field and local variable declarations: identifier is at child(0)
+      try
+        let id = ast(0)?
+        if id.id() == TokenIds.tk_id() then
+          return id
+        end
+      end
+    end
+    // Default: return original node
+    ast
 
   be dispose() =>
     for package_state in this._packages.values() do
