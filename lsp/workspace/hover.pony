@@ -75,7 +75,6 @@ end
 ## Limitations
 
 Current implementation does not support:
-- **Function calls**: Hovering over a function call (e.g., `foo()` in `let x = foo()`) doesn't show the function's signature
 - **Variable usage**: Hovering over a variable being used (e.g., `x` in `let y = x + 1`) doesn't show the variable's type
 - **Complex type expressions**: Unions, intersections, tuples not fully formatted
 - **Primitive type documentation**: Numeric primitives (U32, I64, etc.) show minimal info (just `primitive U32`) without docstrings, while classes like String and Array show full documentation
@@ -201,6 +200,11 @@ primitive HoverFormatter
     // Type references - try to follow to definition
     | TokenIds.tk_reference() => _format_reference(ast, channel)
     | TokenIds.tk_nominal() => _format_reference(ast, channel)
+
+    // Function/method/constructor calls - follow to definition
+    | TokenIds.tk_funref() => _format_reference(ast, channel)
+    | TokenIds.tk_beref() => _format_reference(ast, channel)
+    | TokenIds.tk_newref() => _format_reference(ast, channel)
 
     // Identifier - try to get info from parent or follow to definition
     | TokenIds.tk_id() => _format_id(ast, channel)

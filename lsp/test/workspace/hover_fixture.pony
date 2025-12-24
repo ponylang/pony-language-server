@@ -92,20 +92,16 @@ class TypeInferenceDemo
 
     inferred_string + inferred_bool.string() + inferred_array.size().string()
 
-// ========== Examples of Current Limitations ==========
-
-class LimitationExamples
+class FunctionCallHoverDemo
   """
-  This class demonstrates hover limitations - cases where hover doesn't
-  currently provide information but ideally should.
+  Demonstrates that hover works on function calls!
+  Hovering over a method name in a call shows its signature and docstring.
   """
 
-  // Limitation 1: Function calls don't show signature
   fun demo_function_calls(): String =>
     """
     Try hovering over the method names in the function calls below.
-    EXPECTED: Should show method signature and docstring
-    ACTUAL: No hover information displayed
+    Hover will show the method signature with parameters and docstring.
     """
     let result1 = this.helper_method("test")
     let result2 = this.method_with_multiple_params(42, "hello", true)
@@ -119,7 +115,15 @@ class LimitationExamples
     """Method with multiple parameters for testing."""
     y
 
-  // Limitation 2: Variable usage doesn't show type
+// ========== Examples of Current Limitations ==========
+
+class LimitationExamples
+  """
+  This class demonstrates hover limitations - cases where hover doesn't
+  currently provide information but ideally should.
+  """
+
+  // Limitation 1: Variable usage doesn't show type
   fun demo_variable_usage() =>
     """
     Try hovering over the variable names when they're USED (not declared).
@@ -134,7 +138,7 @@ class LimitationExamples
     let upper_name = name.upper()
     let sum = count + doubled
 
-  // Limitation 3: Complex type expressions
+  // Limitation 2: Complex type expressions
   fun demo_complex_types(): String =>
     """
     Try hovering over these complex type expressions.
@@ -145,7 +149,7 @@ class LimitationExamples
     let tuple_type: (String, U32, Bool) = ("test", U32(42), true)
     union_type.string() + tuple_type._1.string()
 
-  // Limitation 4: Primitive type documentation
+  // Limitation 3: Primitive type documentation
   fun demo_primitive_types(): USize =>
     """
     Try hovering over primitive numeric types vs classes.
@@ -160,7 +164,7 @@ class LimitationExamples
     let value: U32 = 0              // Hover shows just: primitive U32
     text.size() + numbers.size() + value.usize()
 
-  // Limitation 5: Receiver capabilities not shown in signatures
+  // Limitation 4: Receiver capabilities not shown in signatures
   fun box boxed_method(): String =>
     """
     A boxed method - receiver capability is 'box'.
