@@ -24,7 +24,7 @@ class val LspPositionRange
 
     fun to_json(): JsonType =>
         Obj("start", this._start.to_json())(
-            "end", this._start.to_json()
+            "end", this._end.to_json()
         ).build()
 
 class val LspPosition
