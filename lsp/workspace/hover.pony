@@ -75,7 +75,6 @@ end
 ## Limitations
 
 Current implementation does not support:
-- **Function calls**: Hovering over a function call (e.g., `foo()` in `let x = foo()`) doesn't show the function's signature
 - **Variable usage**: Hovering over a variable being used (e.g., `x` in `let y = x + 1`) doesn't show the variable's type
 - **Complex type expressions**: Unions, intersections, tuples not fully formatted
 - **Primitive type documentation**: Numeric primitives (U32, I64, etc.) show minimal info (just `primitive U32`) without docstrings, while classes like String and Array show full documentation
@@ -201,6 +200,14 @@ primitive HoverFormatter
     // Type references - try to follow to definition
     | TokenIds.tk_reference() => _format_reference(ast, channel)
     | TokenIds.tk_nominal() => _format_reference(ast, channel)
+
+    // Function/method/constructor calls - follow to definition
+    | TokenIds.tk_funref() => _format_reference(ast, channel)
+    | TokenIds.tk_beref() => _format_reference(ast, channel)
+    | TokenIds.tk_newref() => _format_reference(ast, channel)
+    | TokenIds.tk_newberef() => _format_reference(ast, channel)
+    | TokenIds.tk_funchain() => _format_reference(ast, channel)
+    | TokenIds.tk_bechain() => _format_reference(ast, channel)
 
     // Identifier - try to get info from parent or follow to definition
     | TokenIds.tk_id() => _format_id(ast, channel)
@@ -444,40 +451,89 @@ primitive HoverFormatter
 
   fun tag _format_from_definition(ast: AST box, channel: Channel): (String | None) =>
     """
-    Follow an identifier or reference to its definition and format that
+    Follow an identifier or reference to its definition and format that.
+
+    Special handling for function calls: The AST library's DefinitionResolver doesn't
+    handle tk_arrow types (viewpoint-adapted types like 'this->Type'), so we manually
+    extract the underlying nominal type and search for the method in the type's scope.
     """
     try
+      // Workaround for function calls with arrow types (e.g., this.method())
+      match ast.id()
+      | TokenIds.tk_funref() | TokenIds.tk_beref() | TokenIds.tk_newref()
+      | TokenIds.tk_newberef() | TokenIds.tk_funchain() | TokenIds.tk_bechain() =>
+        try
+          let receiver = ast.child() as AST
+          let method = receiver.sibling() as AST
+          let method_name = method.token_value() as String
+          let receiver_type = receiver.ast_type() as AST
+
+          // If receiver type is an arrow type, extract the underlying nominal type
+          let nominal_type = if receiver_type.id() == TokenIds.tk_arrow() then
+            // Arrow type has structure: left -> right, we want the right side
+            try
+              receiver_type(1)?
+            else
+              receiver_type
+            end
+          else
+            receiver_type
+          end
+
+          // Now try to find the method in the nominal type
+          if nominal_type.id() == TokenIds.tk_nominal() then
+            try
+              // Get definitions from the nominal type - this should give us the type definition
+              let type_defs = nominal_type.definitions()
+              if type_defs.size() > 0 then
+                let type_def = type_defs(0)?
+                // Search for the method in the type's scope
+                match type_def.find_in_scope(method_name)
+                | let found: AST =>
+                  // Recursively format the found definition
+                  return _format_from_found_definition(found, channel)
+                end
+              end
+            end
+          end
+        end
+      end
+
       // Use definitions() to find where this is defined
       let defs = ast.definitions()
       if defs.size() > 0 then
         // Get the first definition
         let definition = defs(0)?
-        // Format the definition based on its type
-        match definition.id()
-        | TokenIds.tk_class() => _format_entity(definition, "class", channel)
-        | TokenIds.tk_actor() => _format_entity(definition, "actor", channel)
-        | TokenIds.tk_trait() => _format_entity(definition, "trait", channel)
-        | TokenIds.tk_interface() => _format_entity(definition, "interface", channel)
-        | TokenIds.tk_primitive() => _format_entity(definition, "primitive", channel)
-        | TokenIds.tk_type() => _format_entity(definition, "type", channel)
-        | TokenIds.tk_struct() => _format_entity(definition, "struct", channel)
-        | TokenIds.tk_fun() => _format_method(definition, "fun", channel)
-        | TokenIds.tk_be() => _format_method(definition, "be", channel)
-        | TokenIds.tk_new() => _format_method(definition, "new", channel)
-        | TokenIds.tk_flet() => _format_field(definition, "let", channel)
-        | TokenIds.tk_fvar() => _format_field(definition, "var", channel)
-        | TokenIds.tk_embed() => _format_field(definition, "embed", channel)
-        | TokenIds.tk_let() => _format_local_var(definition, "let", channel)
-        | TokenIds.tk_var() => _format_local_var(definition, "var", channel)
-        else
-          // Unknown definition type
-          None
-        end
+        _format_from_found_definition(definition, channel)
       else
-        // No definitions found
         None
       end
     else
+      None
+    end
+
+  fun tag _format_from_found_definition(definition: AST box, channel: Channel): (String | None) =>
+    """
+    Format a definition AST node based on its type
+    """
+    match definition.id()
+    | TokenIds.tk_class() => _format_entity(definition, "class", channel)
+    | TokenIds.tk_actor() => _format_entity(definition, "actor", channel)
+    | TokenIds.tk_trait() => _format_entity(definition, "trait", channel)
+    | TokenIds.tk_interface() => _format_entity(definition, "interface", channel)
+    | TokenIds.tk_primitive() => _format_entity(definition, "primitive", channel)
+    | TokenIds.tk_type() => _format_entity(definition, "type", channel)
+    | TokenIds.tk_struct() => _format_entity(definition, "struct", channel)
+    | TokenIds.tk_fun() => _format_method(definition, "fun", channel)
+    | TokenIds.tk_be() => _format_method(definition, "be", channel)
+    | TokenIds.tk_new() => _format_method(definition, "new", channel)
+    | TokenIds.tk_flet() => _format_field(definition, "let", channel)
+    | TokenIds.tk_fvar() => _format_field(definition, "var", channel)
+    | TokenIds.tk_embed() => _format_field(definition, "embed", channel)
+    | TokenIds.tk_let() => _format_local_var(definition, "let", channel)
+    | TokenIds.tk_var() => _format_local_var(definition, "var", channel)
+    else
+      // Unknown definition type
       None
     end
 
