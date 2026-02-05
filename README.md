@@ -1,32 +1,69 @@
 # Pony Language Server
 
-Language server for Pony. For more information see the [Language Server Standard](https://github.com/Microsoft/language-server-protocol).
+> [!WARNING]
+> This repository has been archived and is now read-only. The components have been moved to new locations within the Pony ecosystem.
+
+## Where Did Everything Go?
+
+### Language Server (`pony-lsp`)
+
+The `pony-lsp` language server source code has been merged into the main Pony compiler repository:
+
+- Repository: [ponylang/ponyc](https://github.com/ponylang/ponyc)
+- Distribution: The language server is now released and distributed together with `ponyc`
+- Installation: Install `ponyc` via your preferred package manager to get the `pony-lsp` binary
+
+### VS Code Extension
+
+The Pony Visual Studio Code extension has been moved to its own dedicated repository:
+
+- Repository: [ponylang/vscode-extension](https://github.com/ponylang/vscode-extension)
+
+## For Users
+
+If you're currently using the Pony Language Server or Visual Studio Code extension:
+
+- **pony-lsp**: Install the latest version of `ponyc` to get the `pony-lsp` binary
+- **VS Code extension**: Get the newest extension from [ponylang/vscode-extension](https://github.com/ponylang/vscode-extension).
+
+## For Contributors
+
+All future development and contributions should be directed to:
+
+- Language server improvements: [ponylang/ponyc](https://github.com/ponylang/ponyc)
+- VS Code extension improvements: [ponylang/vscode-extension](https://github.com/ponylang/vscode-extension)
+
+## Questions?
+
+Come chat with the Pony community via [Zulip](https://ponylang.zulipchat.com/).
 
 ---
 
-## Installation
+Thank you to all contributors who helped build this project! 🎉
 
-### Homebrew (macOS and Linux)
+---
 
-The easiest way to install `pony-lsp` on macOS and Linux is via Homebrew:
+## Historical Documentation
+
+The information below is preserved for historical reference only.
+
+### Language Server Standard
+
+Language server for Pony. For more information see the [Language Server Standard](https://github.com/Microsoft/language-server-protocol).
+
+### Installation (Historical)
+
+#### Homebrew (macOS and Linux)
+
+The easiest way to install `pony-lsp` on macOS and Linux was via Homebrew:
 
 ```sh
 brew install pony-language-server
 ```
 
-### VSCode Extension
+#### VSCode Extension
 
-After installing the language server binary, install the VSCode extension:
-
-1. Build the extension package: `make vscode_extension`
-2. Install the generated `.vsix` file:
-   ```sh
-   code --install-extension build/release/pony-lsp-*.vsix
-   ```
-
-### Building from Source
-
-If you prefer to build from source or are on a platform without Homebrew support, see the [Creating the Language Server binary](#creating-the-language-server-binary) section below.
+The Visual Studio Code extension requires the project to be built from source. See the [Development](#development) section below.
 
 ---
 
